@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CCS International — Internal Tools</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,700;1,9..144,400&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ── Reset ── */
+* { box-sizing: border-box; margin: 0; padding: 0;
+  -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+/* ── Tokens ── */
+:root {
+  --bg:         #0A0F1A;
+  --bg-deep:    #070B14;
+  --surface:    #0F1623;
+  --surface-2:  #161E2D;
+  --surface-3:  #1C2638;
+  --text:       #F8F9FB;
+  --text-sec:   rgba(255,255,255,0.72);
+  --text-muted: rgba(255,255,255,0.55);
+  --text-dim:   rgba(255,255,255,0.38);
+  --border:     rgba(255,255,255,0.06);
+  --border-mid: rgba(255,255,255,0.10);
+  --border-hi:  rgba(255,255,255,0.15);
+  --glass:      rgba(255,255,255,0.03);
+  --accent:     #FF6B35;
+  --accent-hi:  #FF8C5A;
+  --accent-glow:rgba(255,107,53,0.35);
+  --accent-soft:rgba(255,107,53,0.08);
+  --accent-mid: rgba(255,107,53,0.15);
+  --green:      #4ADE80;
+  --green-soft: rgba(74,222,128,0.08);
+  --red:        #F87171;
+  --red-soft:   rgba(248,113,113,0.10);
+}
+
+html, body { background-color: var(--bg); color: var(--text);
+  font-family: 'Geist', sans-serif; min-height: 100vh; }
+
+/* ── Ambient blobs ── */
+body::before { content: ''; position: fixed; top: -180px; right: -180px;
+  width: 560px; height: 560px;
+  background: radial-gradient(circle, rgba(255,107,53,0.10) 0%, transparent 70%);
+  pointer-events: none; z-index: 0; }
+body::after { content: ''; position: fixed; bottom: -200px; left: -200px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(10,15,26,0.8) 0%, transparent 70%);
+  pointer-events: none; z-index: 0; }
+
+/* ── Grain ── */
+.grain { position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.035; pointer-events: none; z-index: 0; }
+
+/* ── Top nav ── */
+.top-nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(7,11,20,0.92);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+  padding: 0 32px;
+  display: flex; align-items: center; justify-content: space-between; height: 56px;
+}
+.nav-brand { display: flex; align-items: center; gap: 10px; }
+.nav-logo { width: 30px; height: 30px; background: var(--accent); border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fraunces', serif; font-weight: 700; font-size: 12px; color: #fff; }
+.nav-name { font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
+.nav-name strong { color: var(--text-sec); }
+.tab-group { display: flex; gap: 4px; }
+.tab-btn {
+  font-family: 'Geist', sans-serif; font-size: 13px; font-weight: 500;
+  padding: 7px 16px; border-radius: 8px; border: 1px solid transparent;
+  cursor: pointer; transition: all 0.15s; color: var(--text-muted); background: transparent;
+  letter-spacing: -0.005em;
+}
+.tab-btn.active { background: var(--accent-soft); border-color: var(--accent-mid); color: var(--accent); }
+.tab-btn:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.04); }
+.nav-right { font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); }
+.nav-right span { color: var(--accent); }
+
+/* ── Tab panels ── */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── Shared layout ── */
+.app { position: relative; z-index: 1; max-width: 1080px;
+  margin: 0 auto; padding: 40px 24px 100px; }
+
+/* ── Shared: Header ── */
+.header { display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; margin-bottom: 40px; }
+.header-left {}
+.eyebrow { font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.header h1 { font-family: 'Fraunces', serif; font-variation-settings: 'opsz' 96, 'SOFT' 30;
+  font-size: clamp(26px, 4vw, 36px); font-weight: 400; letter-spacing: -0.025em;
+  color: var(--text); line-height: 1.15; }
+.header h1 em { font-style: italic; color: var(--accent); }
+.header-desc { font-size: 14px; color: var(--text-muted); margin-top: 8px; line-height: 1.6; }
+
+/* ── Shared: Divider ── */
+.divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border-mid), transparent);
+  margin: 0 0 32px; }
+
+/* ── Shared: Buttons ── */
+.btn { display: inline-flex; align-items: center; gap: 7px;
+  padding: 0 20px; height: 42px; border-radius: 999px; border: 1px solid transparent;
+  font-family: 'Geist', sans-serif; font-size: 13px; font-weight: 500;
+  letter-spacing: -0.005em; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.btn:disabled { opacity: 0.38; cursor: not-allowed; }
+.btn-primary { background: rgba(255,107,53,0.12); border-color: rgba(255,107,53,0.45); color: var(--accent); }
+.btn-primary:hover:not(:disabled) { background: rgba(255,107,53,0.18); border-color: rgba(255,107,53,0.70); }
+.btn-ghost { background: rgba(255,255,255,0.04); border-color: var(--border-hi); color: var(--text-sec); }
+.btn-ghost:hover:not(:disabled) { background: rgba(255,255,255,0.07); color: var(--text); }
+.btn-success { background: rgba(74,222,128,0.10); border-color: rgba(74,222,128,0.35); color: var(--green); }
+.btn-success:hover:not(:disabled) { background: rgba(74,222,128,0.16); border-color: rgba(74,222,128,0.55); }
+.btn-outline { background: transparent; border-color: var(--border-hi); color: var(--text-sec); }
+.btn-outline:hover:not(:disabled) { border-color: var(--accent-mid); color: var(--accent); }
+.action-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; align-items: center; }
+
+/* ── Shared: Cards ── */
+.card { background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.012));
+  border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 20px;
+  backdrop-filter: blur(14px); page-break-inside: avoid; }
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.card-title { font-family: 'Fraunces', serif; font-variation-settings: 'opsz' 36;
+  font-size: 16px; font-weight: 500; letter-spacing: -0.015em; color: var(--text); }
+.card-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+/* ── Shared: Tables ── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th { background: var(--surface-2); color: var(--text-muted);
+  font-family: 'Geist Mono', monospace; font-weight: 500; font-size: 10px;
+  letter-spacing: 0.16em; text-transform: uppercase; padding: 10px 12px;
+  text-align: left; border-bottom: 1px solid var(--border-mid); white-space: nowrap; }
+thead th:first-child { border-radius: 8px 0 0 0; }
+thead th:last-child  { border-radius: 0 8px 0 0; }
+tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
+tbody tr:hover { background: var(--glass); }
+tbody tr:last-child { border-bottom: none; }
+tbody td { padding: 8px 12px; vertical-align: middle; color: var(--text-sec); }
+
+/* ── PTO: Drop zone ── */
+#pto-drop-zone { border: 1.5px dashed var(--border-mid); border-radius: 12px;
+  padding: 44px 24px; text-align: center; cursor: pointer;
+  transition: border-color 0.2s, background 0.2s; background: var(--accent-soft); }
+#pto-drop-zone:hover, #pto-drop-zone.drag-over { border-color: var(--accent); background: rgba(255,107,53,0.12); }
+.dz-icon { width: 44px; height: 44px; background: var(--accent-soft); border: 1px solid var(--accent-mid);
+  border-radius: 12px; display: inline-flex; align-items: center; justify-content: center;
+  margin-bottom: 14px; color: var(--accent); }
+.dz-title { font-size: 14px; font-weight: 500; color: var(--text-sec); margin-bottom: 4px; }
+.dz-title strong { color: var(--accent); cursor: pointer; }
+.dz-hint { font-family: 'Geist Mono', monospace; font-size: 10.5px; font-weight: 500;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); }
+
+/* ── PTO: Chips ── */
+#pto-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-soft);
+  color: var(--accent); border: 1px solid var(--accent-mid); border-radius: 999px;
+  padding: 5px 12px; font-size: 12px; font-weight: 500; }
+.chip button { background: none; border: none; cursor: pointer; color: var(--accent);
+  font-size: 14px; line-height: 1; padding: 0; opacity: 0.7; transition: opacity 0.15s; }
+.chip button:hover { opacity: 1; }
+
+/* ── PTO: Errors ── */
+.error-item { background: var(--red-soft); border: 1px solid rgba(248,113,113,0.25);
+  border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; font-size: 13px;
+  color: var(--red); display: flex; align-items: flex-start; gap: 8px; }
+
+/* ── PTO: Stats ── */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+@media (max-width: 600px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+.stat-card { background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px 16px; text-align: center; }
+.stat-value { font-family: 'Fraunces', serif; font-variation-settings: 'opsz' 36;
+  font-size: 28px; font-weight: 400; color: var(--accent); letter-spacing: -0.02em; line-height: 1; }
+.stat-label { font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); margin-top: 6px; }
+
+/* ── PTO: Table extras ── */
+tbody td input { width: 100%; background: transparent; border: 1px solid transparent;
+  color: var(--text); font-size: 13px; font-family: 'Geist', sans-serif;
+  padding: 5px 8px; border-radius: 6px; transition: border-color 0.15s, background 0.15s; }
+tbody td input:focus { outline: none; border-color: var(--accent-mid); background: var(--accent-soft); }
+.del-btn { background: none; border: none; cursor: pointer; color: var(--text-dim);
+  padding: 4px 8px; border-radius: 6px; transition: color 0.15s, background 0.15s;
+  font-size: 15px; line-height: 1; }
+.del-btn:hover { color: var(--red); background: var(--red-soft); }
+.name-cell { font-weight: 500; color: var(--text) !important; }
+.hours-cell { font-weight: 600; color: var(--accent) !important; text-align: right;
+  font-variant-numeric: tabular-nums; }
+.subtotal-row td { background: var(--accent-soft) !important;
+  font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted) !important;
+  border-top: 1px solid var(--accent-mid); }
+.subtotal-row .hours-cell { color: var(--accent) !important; }
+.cc-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px;
+  font-family: 'Geist Mono', monospace; font-size: 10.5px; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase; }
+.cc-pto     { background: rgba(255,107,53,0.10); color: var(--accent); border: 1px solid rgba(255,107,53,0.25); }
+.cc-vacation{ background: rgba(74,222,128,0.08); color: var(--green); border: 1px solid rgba(74,222,128,0.22); }
+.cc-holiday { background: rgba(251,191,36,0.08); color: #FBBF24; border: 1px solid rgba(251,191,36,0.22); }
+.download-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.download-sep { width: 1px; height: 28px; background: var(--border-mid); }
+.download-label { font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); margin-right: 2px; }
+.pto-empty { text-align: center; padding: 48px 24px; color: var(--text-dim); font-size: 13px; }
+.pto-empty svg { margin-bottom: 12px; opacity: 0.3; }
+
+/* ── GL: Upload zone ── */
+.gl-upload-zone { border: 1.5px dashed rgba(255,107,53,0.35); border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255,107,53,0.04), rgba(255,107,53,0.01));
+  padding: 48px 32px; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 32px; }
+.gl-upload-zone:hover, .gl-upload-zone.drag-over { border-color: var(--accent);
+  background: linear-gradient(180deg, rgba(255,107,53,0.08), rgba(255,107,53,0.03)); }
+.upload-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.7; }
+.gl-upload-zone h3 { font-family: 'Fraunces', serif; font-variation-settings: 'opsz' 36;
+  font-size: 18px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+.gl-upload-zone p { font-size: 13px; color: var(--text-muted); }
+.gl-upload-zone p span { color: var(--accent); }
+
+/* ── GL: File chips ── */
+.file-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+.file-chip { display: flex; align-items: center; gap: 8px; background: var(--surface-2);
+  border: 1px solid var(--border-mid); border-radius: 999px; padding: 6px 14px;
+  font-size: 13px; color: var(--text-sec); }
+.file-chip .remove { cursor: pointer; color: var(--text-dim); font-size: 16px; line-height: 1; transition: color 0.15s; }
+.file-chip .remove:hover { color: #F87171; }
+.file-chip .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.file-chip .status-dot.done { background: var(--green); }
+.gl-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 40px; }
+
+/* ── GL: Instructions ── */
+.instructions-card { background: linear-gradient(180deg, rgba(255,107,53,0.06), rgba(255,107,53,0.02));
+  border: 1px solid rgba(255,107,53,0.20); border-radius: 12px; padding: 20px 24px; margin-bottom: 32px; }
+.instructions-card .inst-title { font-family: 'Geist Mono', monospace; font-size: 10.5px; font-weight: 500;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+.inst-steps { display: flex; flex-direction: column; gap: 6px; }
+.inst-step { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text-sec); line-height: 1.5; }
+.inst-num { font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
+  color: var(--accent); background: var(--accent-soft); border-radius: 4px;
+  padding: 2px 6px; flex-shrink: 0; margin-top: 1px; }
+.inst-step code { font-family: 'Geist Mono', monospace; font-size: 11.5px;
+  background: rgba(255,255,255,0.07); border-radius: 4px; padding: 1px 6px; color: var(--text); }
+
+/* ── GL: Month ref ── */
+.month-ref { background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden; margin-bottom: 32px; }
+.month-ref table { width: 100%; border-collapse: collapse; }
+.month-ref th { background: var(--surface-2); font-family: 'Geist Mono', monospace;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-muted); padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+.month-ref td { padding: 8px 14px; font-size: 13px; color: var(--text-sec); border-bottom: 1px solid var(--border); }
+.month-ref tr:last-child td { border-bottom: none; }
+.month-ref td:last-child { font-family: 'Geist Mono', monospace; font-size: 12px; color: var(--accent); font-weight: 500; }
+.month-ref .active-month td { background: var(--accent-soft); }
+.month-ref .active-month td:last-child { color: var(--accent-hi); }
+
+/* ── GL: Results ── */
+.results-section { margin-top: 8px; }
+.results-month-header { display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+.results-month-title { font-family: 'Fraunces', serif; font-variation-settings: 'opsz' 36;
+  font-size: 20px; font-weight: 500; color: var(--text); }
+.results-month-title span { color: var(--accent); }
+.col-ref-badge { font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.10em; background: var(--accent-soft); border: 1px solid rgba(255,107,53,0.25);
+  color: var(--accent); border-radius: 6px; padding: 4px 10px; }
+.results-table-wrap { background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden; margin-bottom: 40px; }
+.results-table { width: 100%; border-collapse: collapse; }
+.results-table thead th { background: var(--surface-2); font-family: 'Geist Mono', monospace;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-muted); padding: 11px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+.results-table thead th:last-child { text-align: right; }
+.results-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
+.results-table tbody tr:last-child { border-bottom: none; }
+.results-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+.results-table td { padding: 11px 16px; font-size: 13.5px; color: var(--text-sec); }
+.results-table td.row-num { font-family: 'Geist Mono', monospace; font-size: 11px; color: var(--text-dim); width: 60px; }
+.results-table td.category { color: var(--text); font-weight: 500; }
+.results-table td.amount { text-align: right; font-family: 'Geist Mono', monospace;
+  font-size: 13px; color: var(--text); font-weight: 500; }
+.results-table td.amount.clickable { cursor: pointer; border-radius: 4px; transition: all 0.12s; }
+.results-table td.amount.clickable:hover { color: var(--accent); background: var(--accent-soft); }
+.results-table td.amount.copied { color: var(--green) !important; background: var(--green-soft) !important; }
+.results-table td.section-header { background: var(--surface-2); color: var(--text-muted);
+  font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 0.14em;
+  text-transform: uppercase; padding: 7px 16px; font-weight: 500; }
+.results-table td.zero { color: var(--text-dim); }
+.unmapped-card { background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px 20px; margin-bottom: 32px; }
+.unmapped-card .um-title { font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+.unmapped-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.unmapped-pill { font-family: 'Geist Mono', monospace; font-size: 11px; background: var(--surface-2);
+  border: 1px solid var(--border-mid); border-radius: 4px; padding: 3px 8px; color: var(--text-muted); }
+.gl-empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+.gl-empty .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+.gl-empty p { font-size: 14px; }
+
+/* ── Toast ── */
+#toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--surface-3); border: 1px solid var(--border-hi); border-radius: 999px;
+  padding: 10px 20px; font-size: 13px; color: var(--text);
+  opacity: 0; transition: all 0.2s; pointer-events: none; z-index: 9999; white-space: nowrap; }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── Footer ── */
+.footer { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.footer-brand { font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); }
+.footer-brand span { color: var(--accent); }
+
+@media (max-width: 600px) {
+  .results-table td.row-num { display: none; }
+  .results-table thead th:first-child { display: none; }
+  .top-nav { padding: 0 16px; }
+  .nav-right { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<!-- ── Top Nav ── -->
+<nav class="top-nav">
+  <div class="nav-brand">
+    <div class="nav-logo">CCS</div>
+    <div class="nav-name"><strong>CCS International</strong> Internal Tools</div>
+  </div>
+  <div class="tab-group">
+    <button class="tab-btn active" onclick="switchTab('pto')">PTO Extractor</button>
+    <button class="tab-btn" onclick="switchTab('gl')">Transaction Parser</button>
+  </div>
+  <div class="nav-right">Built by <span>RoleMade</span></div>
+</nav>
+
+<!-- ══════════════════════════════════════════ -->
+<!--  TAB 1 — PTO EXTRACTOR                    -->
+<!-- ══════════════════════════════════════════ -->
+<div id="tab-pto" class="tab-panel active">
+<div class="app">
+  <div class="header">
+    <div class="header-left">
+      <div class="eyebrow">Timesheet Tools</div>
+      <h1>PTO / Leave <em>Extractor</em></h1>
+      <p class="header-desc">Upload Excel timesheets to extract PTO, Vacation, and Holiday entries across your team.</p>
+    </div>
+  </div>
+  <div class="divider"></div>
+
+  <div class="card">
+    <div class="card-header">
+      <div><div class="card-title">Upload Timesheets</div>
+        <div class="card-sub">Drag in multiple files or click to browse</div></div>
+    </div>
+    <div id="pto-drop-zone">
+      <div class="dz-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V3m0 0L8 7m4-4l4 4"/>
+        </svg>
+      </div>
+      <p class="dz-title"><strong>Click to browse</strong> or drag &amp; drop files here</p>
+      <p class="dz-hint">.xlsx &amp; .xlsm · Multiple files supported</p>
+    </div>
+    <input type="file" id="pto-file-input" accept=".xlsx,.xlsm" multiple style="display:none"/>
+    <div id="pto-chips"></div>
+    <div class="action-row">
+      <button class="btn btn-primary" id="pto-extract-btn" disabled onclick="ptoExtractAll()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        Extract Entries
+      </button>
+      <button class="btn btn-ghost" onclick="ptoClearAll()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Clear All
+      </button>
+    </div>
+  </div>
+
+  <div id="pto-errors"></div>
+
+  <div class="card" id="pto-stats-card" style="display:none">
+    <div class="card-header"><div><div class="card-title">Results</div>
+      <div class="card-sub">Extracted across all uploaded files</div></div></div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-value" id="pto-stat-entries">0</div><div class="stat-label">Total Entries</div></div>
+      <div class="stat-card"><div class="stat-value" id="pto-stat-hours">0</div><div class="stat-label">Total Hours</div></div>
+      <div class="stat-card"><div class="stat-value" id="pto-stat-employees">0</div><div class="stat-label">Employees</div></div>
+      <div class="stat-card"><div class="stat-value" id="pto-stat-files">0</div><div class="stat-label">Files Processed</div></div>
+    </div>
+  </div>
+
+  <div class="card" id="pto-summary-card" style="display:none">
+    <div class="card-header"><div><div class="card-title">Hours by Employee &amp; Cost Code</div>
+      <div class="card-sub">Totals rolled up across all dates and files</div></div></div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Employee</th><th>Cost Code</th><th style="text-align:right">Total Hours</th></tr></thead>
+        <tbody id="pto-summary-body"></tbody></table>
+    </div>
+  </div>
+
+  <div class="card" id="pto-table-card" style="display:none">
+    <div class="card-header"><div><div class="card-title">Detailed Entries</div>
+      <div class="card-sub">Every individual line item — click any cell to edit</div></div></div>
+    <div class="table-wrap">
+      <table id="pto-results-table">
+        <thead><tr><th>Name</th><th>Date</th><th style="width:80px">Hours</th>
+          <th>Cost Code</th><th>Source File</th><th style="width:44px"></th></tr></thead>
+        <tbody id="pto-results-body"></tbody>
+      </table>
+      <div id="pto-empty-state" class="pto-empty" style="display:none">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <p>No matching entries found.</p>
+      </div>
+    </div>
+    <div class="action-row" style="margin-top:16px">
+      <button class="btn btn-ghost" onclick="ptoAddRow()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Row
+      </button>
+    </div>
+  </div>
+
+  <div class="card" id="pto-download-card" style="display:none">
+    <div class="card-header"><div><div class="card-title">Export</div>
+      <div class="card-sub">Download results as Excel</div></div></div>
+    <div class="download-group">
+      <span class="download-label">Individual</span>
+      <button class="btn btn-outline" onclick="ptoDownload('detail')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Detail Only
+      </button>
+      <button class="btn btn-outline" onclick="ptoDownload('summary')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Summary Only
+      </button>
+      <div class="download-sep"></div>
+      <button class="btn btn-success" onclick="ptoDownload('both')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Both Sheets
+      </button>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">CCS International · <span>PTO Extractor</span></div>
+    <div class="footer-brand">Built by <span>RoleMade</span></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!--  TAB 2 — TRANSACTION PARSER               -->
+<!-- ══════════════════════════════════════════ -->
+<div id="tab-gl" class="tab-panel">
+<div class="app">
+  <div class="header">
+    <div class="header-left">
+      <div class="eyebrow">CCS International — Finance</div>
+      <h1>Transaction <em>Parser</em></h1>
+      <p class="header-desc">Upload monthly IS files. The tool maps every GL code to the Budget Comp category and produces values ready to paste in.</p>
+    </div>
+  </div>
+
+  <div class="gl-upload-zone" id="glUploadZone">
+    <div class="upload-icon">📂</div>
+    <h3>Drop monthly IS files here</h3>
+    <p>Drag one or multiple files, or <span>click to browse</span></p>
+    <input type="file" id="glFileInput" accept=".xlsx,.xls" multiple style="display:none"/>
+  </div>
+
+  <div class="file-list" id="glFileList"></div>
+
+  <div class="gl-actions">
+    <button class="btn btn-primary" id="glProcessBtn" disabled>Process Files</button>
+    <button class="btn btn-success" id="glDownloadBtn" style="display:none">⬇ Download Excel</button>
+    <button class="btn btn-ghost" id="glClearBtn" style="display:none">Clear All</button>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="instructions-card">
+    <div class="inst-title">How to paste into Budget Comp</div>
+    <div class="inst-steps">
+      <div class="inst-step"><span class="inst-num">1</span>
+        <span>Click <strong>Download Excel</strong> after processing. Open the downloaded file.</span></div>
+      <div class="inst-step"><span class="inst-num">2</span>
+        <span>Go to the sheet for your month. Select cells <code>B1:B65</code> and copy (<code>Ctrl+C</code>).</span></div>
+      <div class="inst-step"><span class="inst-num">3</span>
+        <span>Open <strong>Budget Comp 2026</strong> → sheet <strong>YTD Actual &amp; Fcst 26</strong>. Click the cell for the correct month column, row 1 (e.g. <code>Q1</code> for Jan 2026).</span></div>
+      <div class="inst-step"><span class="inst-num">4</span>
+        <span>Open Paste Special: <code>Ctrl+Alt+V</code>. Select <strong>Values</strong>, check <strong>Skip Blanks</strong>, click OK.</span></div>
+    </div>
+  </div>
+
+  <div class="month-ref" id="glMonthRef">
+    <table>
+      <thead><tr><th>Month</th><th>Budget Comp Column</th><th>Cell to Click First</th></tr></thead>
+      <tbody id="glMonthRefBody"></tbody>
+    </table>
+  </div>
+
+  <div class="results-section" id="glResultsSection">
+    <div class="gl-empty"><div class="empty-icon">📊</div><p>Upload and process files to see results here.</p></div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">CCS International · <span>Transaction Parser</span></div>
+    <div class="footer-brand">Built by <span>RoleMade</span></div>
+  </div>
+</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Shared ──────────────────────────────────
+function switchTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    if (b.textContent.toLowerCase().includes(id === 'pto' ? 'pto' : 'transaction')) b.classList.add('active');
+  });
+  window.scrollTo(0, 0);
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+function pad(n) { return String(n).padStart(2, '0'); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function ptoStr(v) { if (v === null || v === undefined) return ''; return String(v); }
+function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`; }
+
+// ════════════════════════════════════════════
+//  PTO EXTRACTOR
+// ════════════════════════════════════════════
+(function() {
+  const uploadedFiles = new Map();
+  let rows = [];
+  let filesProcessed = 0;
+
+  const dz = document.getElementById('pto-drop-zone');
+  dz.addEventListener('click', () => document.getElementById('pto-file-input').click());
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
+  document.getElementById('pto-file-input').addEventListener('change', e => { handleFiles(e.target.files); e.target.value = ''; });
+
+  function handleFiles(fileList) {
+    let added = false;
+    for (const f of fileList) { if (!uploadedFiles.has(f.name)) { uploadedFiles.set(f.name, f); added = true; } }
+    if (added) renderChips();
+  }
+  function renderChips() {
+    const c = document.getElementById('pto-chips');
+    c.innerHTML = '';
+    for (const name of uploadedFiles.keys()) {
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.innerHTML = `<svg class="chip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>${esc(name)}<button title="Remove" onclick="ptoRemoveFile('${esc(name).replace(/'/g,"\\'")}')">×</button>`;
+      c.appendChild(chip);
+    }
+    document.getElementById('pto-extract-btn').disabled = uploadedFiles.size === 0;
+  }
+  window.ptoRemoveFile = function(name) { uploadedFiles.delete(name); renderChips(); };
+  window.ptoClearAll = function() {
+    uploadedFiles.clear(); rows = []; filesProcessed = 0;
+    renderChips(); renderTable(); renderSummaryTable();
+    document.getElementById('pto-errors').innerHTML = '';
+    ['pto-stats-card','pto-summary-card','pto-table-card','pto-download-card'].forEach(id => document.getElementById(id).style.display = 'none');
+  };
+  window.ptoExtractAll = async function() {
+    document.getElementById('pto-errors').innerHTML = '';
+    rows = []; filesProcessed = 0;
+    const errs = [];
+    for (const [fname, file] of uploadedFiles.entries()) {
+      try { const extracted = await parseFile(file); rows.push(...extracted); filesProcessed++; }
+      catch (e) { errs.push({ fname, msg: e.message || String(e) }); }
+    }
+    const errContainer = document.getElementById('pto-errors');
+    errContainer.innerHTML = '';
+    for (const { fname, msg } of errs) {
+      errContainer.innerHTML += `<div class="error-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span><strong>${esc(fname)}:</strong> ${esc(msg)}</span></div>`;
+    }
+    rows.sort((a, b) => { const nc = a.name.localeCompare(b.name); return nc !== 0 ? nc : a.date.localeCompare(b.date); });
+    renderTable(); renderSummaryTable(); updateStats();
+    ['pto-stats-card','pto-summary-card','pto-table-card','pto-download-card'].forEach(id => document.getElementById(id).style.display = 'block');
+  };
+
+  function parseFile(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('FileReader error'));
+      reader.onload = e => {
+        try {
+          const buf = new Uint8Array(e.target.result);
+          const wb = XLSX.read(buf, { type: 'array', raw: true });
+          let sheetName = wb.SheetNames.find(n => n.trim().toLowerCase() === 'timesheet') || wb.SheetNames[0];
+          const ws = wb.Sheets[sheetName];
+          if (!ws) throw new Error('No readable sheet found');
+          const raw = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null });
+          let empName = null;
+          for (let r = 0; r < Math.min(40, raw.length) && !empName; r++) {
+            const row = raw[r];
+            for (let c = 0; c < row.length; c++) {
+              if (/employee\s*name/i.test(ptoStr(row[c]))) {
+                for (let cc = c + 1; cc < row.length; cc++) {
+                  const v = ptoStr(row[cc]).trim();
+                  if (v && !v.startsWith('=') && !/^ur\s*name$/i.test(v)) { empName = v; break; }
+                }
+                if (!empName) { const fb = ptoStr(row[1]).trim(); if (fb && !fb.startsWith('=') && !/^ur\s*name$/i.test(fb)) empName = fb; }
+                break;
+              }
+            }
+          }
+          if (!empName) {
+            for (let r = 0; r < Math.min(40, raw.length) && !empName; r++)
+              for (const cell of raw[r]) { const v = ptoStr(cell).trim(); if (/^[A-Za-z\-']+,\s*[A-Za-z\-']+$/.test(v)) { empName = v; break; } }
+          }
+          if (!empName) empName = 'Unknown';
+          let headerRowIdx = -1, colDate = -1, colCode = -1, colHours = -1;
+          for (let r = 0; r < Math.min(40, raw.length); r++) {
+            const row = raw[r]; let hasCostCode = false, hasHours = false, td = -1, tc = -1, th = -1;
+            for (let c = 0; c < row.length; c++) {
+              const v = ptoStr(row[c]).toLowerCase().trim();
+              if (v.includes('cost code')) { hasCostCode = true; tc = c; }
+              if (v === 'date') td = c;
+              if (v.includes('hours') && !v.includes('job') && !v.includes('dept')) { hasHours = true; th = c; }
+            }
+            if (hasCostCode && hasHours) { headerRowIdx = r; colDate = td; colCode = tc; colHours = th; break; }
+          }
+          if (headerRowIdx === -1) throw new Error('Could not locate header row');
+          if (colCode === -1) throw new Error('Cost Code column not found');
+          if (colHours === -1) throw new Error('Hours column not found');
+          const keywords = ['pto', 'vacation', 'holiday'];
+          const results = []; let blankStreak = 0;
+          for (let r = headerRowIdx + 1; r < raw.length; r++) {
+            const row = raw[r];
+            const rawCode = row[colCode], rawHours = row[colHours], rawDate = colDate >= 0 ? row[colDate] : null;
+            const codeStr = ptoStr(rawCode).trim(), hoursStr = ptoStr(rawHours).trim(), dateStr = ptoStr(rawDate).trim();
+            let stop = false;
+            for (const cell of row) { if (/^totals?$/i.test(ptoStr(cell).trim())) { stop = true; break; } }
+            if (stop) break;
+            if (!codeStr && !hoursStr && !dateStr) { blankStreak++; if (blankStreak >= 3) break; continue; }
+            blankStreak = 0;
+            if (!codeStr || codeStr.startsWith('=')) continue;
+            if (!keywords.some(k => codeStr.toLowerCase().includes(k))) continue;
+            const hours = parseFloat(hoursStr);
+            if (!hoursStr || isNaN(hours) || hours === 0) continue;
+            results.push({ name: empName, date: parseDate(rawDate), hours, costCode: codeStr, sourceFile: file.name });
+          }
+          resolve(results);
+        } catch (err) { reject(err); }
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  function parseDate(val) {
+    if (val === null || val === undefined) return '';
+    const s = ptoStr(val).trim();
+    if (s.startsWith('=')) return '';
+    if (typeof val === 'number' && val > 1000) { try { const d = XLSX.SSF.parse_date_code(val); return `${d.y}-${pad(d.m)}-${pad(d.d)}`; } catch (e) { return String(val); } }
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.substring(0, 10);
+    if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(s)) { const [m, d, y] = s.split('/'); return `${y}-${pad(parseInt(m))}-${pad(parseInt(d))}`; }
+    if (val instanceof Date) return `${val.getFullYear()}-${pad(val.getMonth()+1)}-${pad(val.getDate())}`;
+    return s;
+  }
+
+  function ccBadge(code) {
+    const cl = code.toLowerCase();
+    let cls = 'cc-pto';
+    if (cl.includes('vacation')) cls = 'cc-vacation';
+    else if (cl.includes('holiday')) cls = 'cc-holiday';
+    return `<span class="cc-badge ${cls}">${esc(code)}</span>`;
+  }
+
+  function buildAggData() {
+    const map = new Map();
+    for (const r of rows) { const key = `${r.name}|||${r.costCode}`; map.set(key, (map.get(key)||0) + (parseFloat(r.hours)||0)); }
+    return [...map.entries()].map(([key, hrs]) => { const [name, costCode] = key.split('|||'); return { name, costCode, hours: hrs }; })
+      .sort((a, b) => { const nc = a.name.localeCompare(b.name); return nc !== 0 ? nc : a.costCode.localeCompare(b.costCode); });
+  }
+
+  function renderSummaryTable() {
+    const tbody = document.getElementById('pto-summary-body');
+    tbody.innerHTML = '';
+    const agg = buildAggData();
+    if (!agg.length) return;
+    let lastName = null, empTotal = 0, empRows = [];
+    const flush = () => {
+      for (const er of empRows) tbody.appendChild(er);
+      const tr = document.createElement('tr');
+      tr.className = 'subtotal-row';
+      tr.innerHTML = `<td></td><td>Subtotal</td><td class="hours-cell">${fmtH(empTotal)}</td>`;
+      tbody.appendChild(tr);
+      empRows = []; empTotal = 0;
+    };
+    for (const row of agg) {
+      if (lastName !== null && row.name !== lastName) flush();
+      lastName = row.name; empTotal += row.hours;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td class="name-cell">${empRows.length === 0 ? esc(row.name) : ''}</td><td>${ccBadge(row.costCode)}</td><td class="hours-cell">${fmtH(row.hours)}</td>`;
+      empRows.push(tr);
+    }
+    flush();
+  }
+
+  function fmtH(h) { return h % 1 === 0 ? h : parseFloat(h.toFixed(2)); }
+
+  function renderTable() {
+    const tbody = document.getElementById('pto-results-body');
+    const empty = document.getElementById('pto-empty-state');
+    tbody.innerHTML = '';
+    if (!rows.length) { empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    rows.forEach((row, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input value="${esc(row.name)}" oninput="ptoUpdateRow(${i},'name',this.value)"/></td>
+        <td><input value="${esc(row.date)}" oninput="ptoUpdateRow(${i},'date',this.value)" placeholder="YYYY-MM-DD"/></td>
+        <td><input value="${esc(String(row.hours))}" oninput="ptoUpdateRow(${i},'hours',this.value)" style="text-align:right"/></td>
+        <td><input value="${esc(row.costCode)}" oninput="ptoUpdateRow(${i},'costCode',this.value)"/></td>
+        <td><input value="${esc(row.sourceFile)}" oninput="ptoUpdateRow(${i},'sourceFile',this.value)"/></td>
+        <td><button class="del-btn" onclick="ptoDeleteRow(${i})">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+        </button></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  window.ptoUpdateRow = function(i, field, val) {
+    rows[i][field] = field === 'hours' ? (parseFloat(val)||val) : val;
+    updateStats(); renderSummaryTable();
+  };
+  window.ptoDeleteRow = function(i) { rows.splice(i, 1); renderTable(); renderSummaryTable(); updateStats(); };
+  window.ptoAddRow = function() {
+    rows.push({ name:'', date:'', hours:0, costCode:'', sourceFile:'' });
+    renderTable(); updateStats();
+    const inputs = document.querySelectorAll('#pto-results-body tr:last-child input');
+    if (inputs[0]) inputs[0].focus();
+  };
+
+  function updateStats() {
+    const totalHours = rows.reduce((s, r) => s + (parseFloat(r.hours)||0), 0);
+    const employees = new Set(rows.map(r => r.name).filter(Boolean)).size;
+    document.getElementById('pto-stat-entries').textContent = rows.length;
+    document.getElementById('pto-stat-hours').textContent = fmtH(totalHours);
+    document.getElementById('pto-stat-employees').textContent = employees;
+    document.getElementById('pto-stat-files').textContent = filesProcessed;
+  }
+
+  window.ptoDownload = function(mode) {
+    const wb = XLSX.utils.book_new();
+    if (mode === 'detail' || mode === 'both') {
+      const data = rows.map(r => ({ 'Name': r.name, 'Date': r.date, 'Hours': parseFloat(r.hours)||0, 'Cost Code': r.costCode, 'Source File': r.sourceFile }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data, { header: ['Name','Date','Hours','Cost Code','Source File'] }), 'Detail');
+    }
+    if (mode === 'summary' || mode === 'both') {
+      const agg = buildAggData();
+      const data = agg.map(r => ({ 'Name': r.name, 'Cost Code': r.costCode, 'Total Hours': fmtH(r.hours) }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data, { header: ['Name','Cost Code','Total Hours'] }), 'Summary by Employee');
+    }
+    const label = mode === 'detail' ? 'Detail' : mode === 'summary' ? 'Summary' : 'Full';
+    XLSX.writeFile(wb, `PTO_Extract_${label}_${todayStr()}.xlsx`);
+  };
+})();
+
+// ════════════════════════════════════════════
+//  TRANSACTION PARSER
+// ════════════════════════════════════════════
+(function() {
+  const GL_TO_ROW = {
+    50081:16, 60001:35, 70001:35,
+    50021:41,60021:41,70021:41, 50022:41,60022:41,70022:41, 50023:41,60023:41,70023:41,
+    50035:42,60035:42,70035:42, 50040:42,60040:42,70040:42, 50032:42,
+    50044:42,60044:42,70044:42, 50045:42,60045:42,70045:42,
+    50047:42,60047:42,70047:42, 50042:42,60042:42,70042:42, 70034:42,50120:42,
+    50091:43,60091:43,70091:43,
+    50290:44,60290:44,70290:44,
+    50410:45,60410:45,70410:45,
+    70010:47,70002:47, 60280:47,70280:47,50280:47, 70160:47,60160:47,50160:47,
+    60400:48,60020:48,60081:48,70020:48,50282:48,
+    50030:49,60030:49,70030:49, 70120:49,60170:49,50170:49,70170:49,
+    50340:50,60340:50,70340:50, 70082:50, 50080:50,60080:50,70080:50,
+    60380:52,70380:52,50380:52, 60390:52,70390:52,50390:52,
+    50300:53,60300:53,70300:53, 50420:53,70420:53, 50310:53,60310:53,70310:53, 50130:53,60130:53,70130:53,
+    60110:54,70110:54,50110:54, 60370:54,70370:54,50370:54, 70230:54,70000:54,
+    70190:54,60190:54,50190:54, 70200:54,60200:54,50200:54,
+    50270:54,60270:54,70270:54, 50215:54,60215:54,70215:54, 70175:54,
+    70140:55,70150:55, 60032:55,70032:55, 70151:55,70152:55,70155:55,
+    50038:56,60038:56,70038:56,
+    70330:57, 50050:58,
+    60090:60,70090:60,70225:60,
+  };
+  const GL_STRING_MAP = { 'CR-01': 60 };
+  const ROW_LABELS = {
+    10:'Services Revenue', 16:'Sub-Consulting Services', 20:'Salaries and Wages — Direct',
+    35:'Indirect Salaries and Wages', 41:'Payroll taxes', 42:'Benefits',
+    43:'Incentive Compensation Bonuses', 44:'Recruiting Fees', 45:'Training',
+    47:'Professional and legal fees', 48:'Sales and marketing',
+    49:'Travel, meals and entertainment', 50:'IT related costs', 52:'Communication technology',
+    53:'Facility cost', 54:'Office expenses', 55:'Insurance', 56:'Auto expenses',
+    57:'Bank charges', 58:'Bad debt', 60:'Other',
+  };
+  const SECTION_BREAKS = { 10:'REVENUE', 16:'COST OF REVENUE', 20:'DIRECT LABOR', 35:'INDIRECT COSTS', 41:null };
+  const ROW_ORDER = [10,16,20,35,41,42,43,44,45,47,48,49,50,52,53,54,55,56,57,58,60];
+  const MONTH_COLS = [
+    {month:'January 2026',col:'Q',budgetRow:'Q1'}, {month:'February 2026',col:'R',budgetRow:'R1'},
+    {month:'March 2026',col:'S',budgetRow:'S1'},   {month:'April 2026',col:'T',budgetRow:'T1'},
+    {month:'May 2026',col:'U',budgetRow:'U1'},      {month:'June 2026',col:'V',budgetRow:'V1'},
+    {month:'July 2026',col:'W',budgetRow:'W1'},     {month:'August 2026',col:'X',budgetRow:'X1'},
+    {month:'September 2026',col:'Y',budgetRow:'Y1'},{month:'October 2026',col:'Z',budgetRow:'Z1'},
+    {month:'November 2026',col:'AA',budgetRow:'AA1'},{month:'December 2026',col:'AB',budgetRow:'AB1'},
+  ];
+
+  let glFiles = [];
+  let glResults = [];
+
+  function renderMonthRef(activeMonths = []) {
+    document.getElementById('glMonthRefBody').innerHTML = MONTH_COLS.map(m => {
+      const isActive = activeMonths.includes(m.month);
+      return `<tr class="${isActive ? 'active-month' : ''}"><td>${m.month}</td><td>Column ${m.col}</td><td>Click <strong>${m.budgetRow}</strong> then paste</td></tr>`;
+    }).join('');
+  }
+  renderMonthRef();
+
+  const uploadZone = document.getElementById('glUploadZone');
+  const fileInput  = document.getElementById('glFileInput');
+  const processBtn = document.getElementById('glProcessBtn');
+  const downloadBtn= document.getElementById('glDownloadBtn');
+  const clearBtn   = document.getElementById('glClearBtn');
+
+  uploadZone.addEventListener('click', () => fileInput.click());
+  uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+  uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('drag-over'); addFiles([...e.dataTransfer.files]); });
+  fileInput.addEventListener('change', () => { addFiles([...fileInput.files]); fileInput.value = ''; });
+
+  function addFiles(newFiles) {
+    newFiles.forEach(f => { if (!glFiles.find(x => x.name === f.name)) glFiles.push(f); });
+    renderFileList();
+    processBtn.disabled = glFiles.length === 0;
+    clearBtn.style.display = glFiles.length ? 'inline-flex' : 'none';
+  }
+
+  window.glRemoveFile = function(name) {
+    glFiles = glFiles.filter(f => f.name !== name);
+    renderFileList();
+    processBtn.disabled = glFiles.length === 0;
+    if (!glFiles.length) clearBtn.style.display = 'none';
+  };
+
+  function renderFileList() {
+    document.getElementById('glFileList').innerHTML = glFiles.map(f =>
+      `<div class="file-chip"><span class="status-dot" id="gldot-${CSS.escape(f.name)}"></span><span>${f.name}</span><span class="remove" onclick="glRemoveFile('${f.name.replace(/'/g,"\\'")}')">×</span></div>`
+    ).join('');
+  }
+
+  clearBtn.addEventListener('click', () => {
+    glFiles = []; glResults = [];
+    renderFileList(); processBtn.disabled = true;
+    downloadBtn.style.display = 'none'; clearBtn.style.display = 'none';
+    renderResults([]); renderMonthRef();
+  });
+
+  function extractGLCode(v) {
+    if (!v) return null;
+    const m = String(v).trim().match(/^([A-Z0-9]+-?[A-Z0-9]*)\s{2,}/);
+    return m ? m[1] : null;
+  }
+
+  function detectMonth(ws) {
+    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+    for (let r = 0; r <= Math.min(10, range.e.r); r++) {
+      for (let c = 0; c <= range.e.c; c++) {
+        const cell = ws[XLSX.utils.encode_cell({r,c})];
+        if (!cell) continue;
+        const m = String(cell.v||'').match(/For \d+ Month(?:s)? Ending ([A-Za-z]+ \d{4})/i);
+        if (m) return m[1];
+      }
+    }
+    return null;
+  }
+
+  function glParseFile(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const wb = XLSX.read(e.target.result, { type: 'array' });
+          const ws = wb.Sheets[wb.SheetNames[0]];
+          const monthLabel = detectMonth(ws);
+          const data = XLSX.utils.sheet_to_json(ws, { header:1, defval:null });
+          const totals = {};
+          const unmapped = {};
+          let directWages = 0;
+
+          data.forEach(row => {
+            const descCell = row[1], amtCell = row[4];
+            if (!descCell || amtCell == null || amtCell === '') return;
+            const amount = parseFloat(amtCell);
+            if (isNaN(amount)) return;
+            const glCode = extractGLCode(descCell);
+            if (!glCode) return;
+            if (GL_STRING_MAP[glCode] !== undefined) { totals[GL_STRING_MAP[glCode]] = (totals[GL_STRING_MAP[glCode]]||0) + amount; return; }
+            const glNum = parseInt(glCode, 10);
+            if (!isNaN(glNum) && (glNum === 50001 || glNum === 50002)) { directWages += amount; return; }
+            if (!isNaN(glNum) && glNum >= 40000 && glNum < 49000) { totals[10] = (totals[10]||0) + amount; return; }
+            if (!isNaN(glNum) && GL_TO_ROW[glNum] !== undefined) { const r = GL_TO_ROW[glNum]; totals[r] = (totals[r]||0) + amount; return; }
+            if (glCode && !['41','42','43','44'].some(p => glCode.startsWith(p))) unmapped[glCode] = { desc: String(descCell).trim(), amount };
+          });
+
+          totals[20] = directWages * 0.78;
+          totals[35] = (totals[35]||0) + directWages * 0.22;
+
+          const mc = monthLabel ? MONTH_COLS.find(x => x.month === monthLabel) : null;
+          resolve({ month: monthLabel||file.name, label: monthLabel||file.name, col: mc ? mc.col : '?', totals, unmapped, fileName: file.name });
+        } catch (err) { reject(err); }
+      };
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  processBtn.addEventListener('click', async () => {
+    processBtn.disabled = true;
+    processBtn.textContent = 'Processing…';
+    glResults = [];
+    for (const file of glFiles) {
+      const dot = document.getElementById('gldot-' + CSS.escape(file.name));
+      try {
+        const result = await glParseFile(file);
+        glResults.push(result);
+        if (dot) dot.classList.add('done');
+      } catch (err) { showToast(`Error reading ${file.name}`); }
+    }
+    glResults.sort((a, b) => {
+      const ai = MONTH_COLS.findIndex(x => x.month === a.label);
+      const bi = MONTH_COLS.findIndex(x => x.month === b.label);
+      return (ai===-1?99:ai) - (bi===-1?99:bi);
+    });
+    renderResults(glResults);
+    renderMonthRef(glResults.map(r => r.label));
+    processBtn.textContent = 'Process Files';
+    processBtn.disabled = false;
+    downloadBtn.style.display = glResults.length ? 'inline-flex' : 'none';
+  });
+
+  function glFmt(n) {
+    if (n == null) return '—';
+    return new Intl.NumberFormat('en-US', { style:'currency', currency:'USD', minimumFractionDigits:2, maximumFractionDigits:2 }).format(n);
+  }
+
+  function renderResults(allResults) {
+    const section = document.getElementById('glResultsSection');
+    if (!allResults.length) {
+      section.innerHTML = `<div class="gl-empty"><div class="empty-icon">📊</div><p>Upload and process files to see results here.</p></div>`;
+      return;
+    }
+    let html = '';
+    allResults.forEach((res, ri) => {
+      html += `<div class="results-month-header"><div class="results-month-title">${res.label} <span>·</span> ${res.fileName}</div><div class="col-ref-badge">Paste into column ${res.col}</div></div>`;
+      html += `<div class="results-table-wrap"><table class="results-table"><thead><tr><th>BC Row</th><th>Category</th><th style="text-align:right">Amount</th></tr></thead><tbody>`;
+      let prevSection = null;
+      ROW_ORDER.forEach(rowNum => {
+        const sec = SECTION_BREAKS[rowNum];
+        if (sec !== undefined && sec !== prevSection) { html += `<tr><td class="section-header" colspan="3">${sec}</td></tr>`; prevSection = sec; }
+        const amount = res.totals[rowNum] || 0;
+        const isZero = amount === 0;
+        const cellId = `glamt-${ri}-${rowNum}`;
+        html += `<tr><td class="row-num">${rowNum}</td><td class="category">${ROW_LABELS[rowNum]}</td>
+          <td class="amount${isZero?' zero':' clickable'}" id="${cellId}" ${!isZero ? `onclick="glCopyAmt('${cellId}',${amount})"` : ''}>${glFmt(amount)}</td></tr>`;
+      });
+      html += `</tbody></table></div>`;
+      const unmappedKeys = Object.keys(res.unmapped);
+      if (unmappedKeys.length) {
+        html += `<div class="unmapped-card"><div class="um-title">Unmapped GL codes — verify manually</div><div class="unmapped-list">`;
+        unmappedKeys.forEach(k => { html += `<span class="unmapped-pill" title="${res.unmapped[k].desc}">${k} (${glFmt(res.unmapped[k].amount)})</span>`; });
+        html += `</div></div>`;
+      }
+    });
+    section.innerHTML = html;
+  }
+
+  window.glCopyAmt = function(cellId, amount) {
+    const formatted = amount.toFixed(2);
+    const doFallback = () => {
+      const ta = document.createElement('textarea');
+      ta.value = formatted; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      showToast(`Copied ${glFmt(amount)}`);
+    };
+    const flash = () => {
+      const el = document.getElementById(cellId);
+      if (el) { el.classList.add('copied'); el.textContent = 'Copied!';
+        setTimeout(() => { el.classList.remove('copied'); el.textContent = glFmt(amount); }, 1200); }
+      showToast(`Copied ${glFmt(amount)}`);
+    };
+    if (navigator.clipboard) navigator.clipboard.writeText(formatted).then(flash).catch(doFallback);
+    else doFallback();
+  };
+
+  downloadBtn.addEventListener('click', () => {
+    if (!glResults.length) return;
+    const wb = XLSX.utils.book_new();
+    const instrData = [
+      ['HOW TO USE THIS FILE'],[''],
+      ['1. Go to the sheet for your month'],['2. Select cells B1 through B65'],
+      ['3. Copy (Ctrl+C)'],['4. Open Budget Comp 2026 → YTD Actual & Fcst 26'],
+      ['5. Click on Row 1 of the correct month column (see below)'],
+      ['6. Ctrl+Alt+V → Values + Skip Blanks → OK'],[''],
+      ['MONTH','COLUMN','CLICK FIRST'],
+      ...MONTH_COLS.map(m => [m.month, `Column ${m.col}`, m.budgetRow]),
+    ];
+    const instrWs = XLSX.utils.aoa_to_sheet(instrData);
+    instrWs['!cols'] = [{wch:40},{wch:14},{wch:22}];
+    XLSX.utils.book_append_sheet(wb, instrWs, 'Instructions');
+
+    glResults.forEach(res => {
+      const sheetData = [];
+      for (let i = 0; i < 65; i++) sheetData.push(['', null]);
+      sheetData[0] = [`${res.label} — Paste column B into Budget Comp column ${res.col}`, ''];
+      ROW_ORDER.forEach(rowNum => {
+        const amount = res.totals[rowNum];
+        if (rowNum <= 64 && amount != null && amount !== 0) sheetData[rowNum-1] = [ROW_LABELS[rowNum], amount];
+      });
+      const ws = XLSX.utils.aoa_to_sheet(sheetData);
+      ws['!cols'] = [{wch:40},{wch:18}];
+      ROW_ORDER.forEach(rowNum => {
+        if (rowNum <= 64) { const cr = XLSX.utils.encode_cell({r:rowNum-1,c:1}); if (ws[cr]&&ws[cr].v!=null){ws[cr].t='n';ws[cr].z='#,##0.00';} }
+      });
+      XLSX.utils.book_append_sheet(wb, ws, res.label.slice(0,31));
+    });
+    XLSX.writeFile(wb, `CCS-Budget-Input-${todayStr()}.xlsx`);
+    showToast('Excel file downloaded');
+  });
+})();
+</script>
+</body>
+</html>
