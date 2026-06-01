@@ -68,6 +68,8 @@ body::after { content: ''; position: fixed; bottom: -200px; left: -200px;
 .nav-logo { width: 30px; height: 30px; background: var(--accent); border-radius: 7px;
   display: flex; align-items: center; justify-content: center;
   font-family: 'Fraunces', serif; font-weight: 700; font-size: 12px; color: #fff; }
+.nav-logo-img { height: 22px; width: auto; opacity: 0.92; }
+.nav-divider { width: 1px; height: 18px; background: var(--border-mid); margin: 0 4px; }
 .nav-name { font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 500;
   letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
 .nav-name strong { color: var(--text-sec); }
@@ -365,6 +367,122 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 .rev-table tr.totals-row td { border-top: 1px solid var(--border-mid); background: rgba(255,255,255,0.025); font-weight: 600; font-family: 'Geist Mono', monospace; font-size: 12px; color: var(--text); }
 .rev-table tr.totals-row td.lbl { font-family: 'Geist', sans-serif; font-size: 12px; color: var(--text-muted); letter-spacing: 0; }
 
+/* — Splash — */
+@keyframes splashFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes splashUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes splashPulse {
+  0%, 100% { transform: scale(1);   opacity: 0.18; }
+  50%       { transform: scale(1.12); opacity: 0.26; }
+}
+@keyframes splashBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+@keyframes splashExit {
+  from { opacity: 1; }
+  to   { opacity: 0; transform: scale(1.015); }
+}
+.splash {
+  position: fixed; inset: 0; z-index: 1000;
+  background: var(--bg-deep);
+  display: flex; align-items: center; justify-content: center;
+  animation: splashFadeIn 0.5s ease both;
+}
+.splash.exiting {
+  animation: splashExit 0.45s ease forwards;
+  pointer-events: none;
+}
+.splash-blob-1 {
+  position: absolute; top: -120px; right: -120px;
+  width: 600px; height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,107,53,0.18) 0%, transparent 65%);
+  animation: splashPulse 4s ease-in-out infinite;
+  pointer-events: none;
+}
+.splash-blob-2 {
+  position: absolute; bottom: -160px; left: -160px;
+  width: 700px; height: 700px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,107,53,0.08) 0%, transparent 65%);
+  animation: splashPulse 5.5s ease-in-out infinite reverse;
+  pointer-events: none;
+}
+.splash-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 72px 72px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black, transparent);
+  mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black, transparent);
+  pointer-events: none;
+}
+.splash-content {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; gap: 0;
+}
+.splash-logo-img {
+  height: 32px; width: auto; opacity: 0.9; margin-bottom: 36px;
+  opacity: 0; animation: splashUp 0.5s ease 0.1s forwards;
+}
+.splash-badge {
+  font-family: 'Geist Mono', monospace; font-size: 10.5px; font-weight: 500;
+  letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent);
+  background: var(--accent-soft); border: 1px solid var(--accent-mid);
+  border-radius: 999px; padding: 5px 16px; margin-bottom: 32px;
+  opacity: 0; animation: splashUp 0.5s ease 0.2s forwards;
+}
+.splash-heading {
+  font-family: 'Fraunces', serif;
+  font-variation-settings: 'opsz' 144, 'SOFT' 50;
+  font-size: clamp(52px, 9vw, 96px);
+  font-weight: 400; letter-spacing: -0.04em; line-height: 1.05;
+  color: var(--text); margin-bottom: 20px;
+  opacity: 0; animation: splashUp 0.6s ease 0.35s forwards;
+}
+.splash-heading em {
+  font-style: italic; color: var(--accent);
+  font-variation-settings: 'opsz' 144, 'SOFT' 80;
+}
+.splash-sub {
+  font-family: 'Geist', sans-serif; font-size: clamp(15px, 2vw, 18px);
+  font-weight: 400; color: var(--text-muted); margin-bottom: 52px; line-height: 1.6;
+  opacity: 0; animation: splashUp 0.6s ease 0.5s forwards;
+}
+.splash-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: rgba(255,107,53,0.12); border: 1px solid rgba(255,107,53,0.50);
+  color: var(--accent); font-family: 'Geist', sans-serif;
+  font-size: 15px; font-weight: 500; letter-spacing: -0.005em;
+  padding: 0 32px; height: 52px; border-radius: 999px;
+  cursor: pointer; transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  opacity: 0; animation: splashUp 0.6s ease 0.65s forwards;
+}
+.splash-btn:hover {
+  background: rgba(255,107,53,0.20); border-color: rgba(255,107,53,0.75);
+  box-shadow: 0 0 32px rgba(255,107,53,0.22);
+}
+.splash-btn svg { transition: transform 0.2s; }
+.splash-btn:hover svg { transform: translateX(3px); }
+.splash-line {
+  width: 1px; height: 40px;
+  background: linear-gradient(to bottom, transparent, rgba(255,107,53,0.35), transparent);
+  margin: 36px 0 20px;
+  opacity: 0; animation: splashUp 0.5s ease 0.8s forwards;
+}
+.splash-footer {
+  font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim);
+  opacity: 0; animation: splashUp 0.5s ease 0.85s forwards;
+}
+.splash-footer span { color: rgba(255,107,53,0.5); }
+
 /* — Toast — */
 #toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
   background: var(--surface-3); border: 1px solid var(--border-hi); border-radius: 999px;
@@ -388,13 +506,34 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 </style>
 </head>
 <body>
+
+<!-- Splash Screen -->
+<div id="splash" class="splash">
+  <div class="splash-blob-1"></div>
+  <div class="splash-blob-2"></div>
+  <div class="splash-grid"></div>
+  <div class="splash-content">
+    <img src="ccs-logo.svg" alt="CCS International" class="splash-logo-img"/>
+    <div class="splash-badge">Internal Tools</div>
+    <h1 class="splash-heading">Hi, <em>Dave.</em></h1>
+    <p class="splash-sub">Your tools are ready. Let's get to work.</p>
+    <button class="splash-btn" onclick="dismissSplash()">
+      Get Started
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </button>
+    <div class="splash-line"></div>
+    <div class="splash-footer">Built by <span>RoleMade</span></div>
+  </div>
+</div>
+
 <div class="grain"></div>
 
 <!-- Top Nav -->
 <nav class="top-nav">
   <div class="nav-brand">
-    <div class="nav-logo">CCS</div>
-    <div class="nav-name"><strong>CCS International</strong> Internal Tools</div>
+    <img src="ccs-logo.svg" alt="CCS International" class="nav-logo-img"/>
+    <div class="nav-divider"></div>
+    <div class="nav-name">Internal Tools</div>
   </div>
   <div class="tab-group">
     <button class="tab-btn active" data-tab="pto" onclick="switchTab('pto')">PTO Extractor</button>
@@ -666,6 +805,13 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 <div id="toast"></div>
 
 <script>
+// — Splash ——————————————————————————————
+function dismissSplash() {
+  const splash = document.getElementById('splash');
+  splash.classList.add('exiting');
+  setTimeout(() => { splash.style.display = 'none'; }, 460);
+}
+
 // — Shared ——————————————————————————————
 function switchTab(id) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
