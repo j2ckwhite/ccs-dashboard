@@ -1328,7 +1328,7 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
           const name    = t.name  || ytd.names[pn]    || monthly.names[pn]    || String(pn);
           const prime   = t.prime || ytd.clients[pn]  || monthly.clients[pn]  || '';
           const origRem = t.remaining;
-          const rem     = t.remaining !== null ? +(t.remaining - ytdAmt).toFixed(2) : null;
+          const rem     = t.remaining !== null ? +Math.max(0, t.remaining - ytdAmt).toFixed(2) : null;
           rowsIn.push({ pn, name, prime, origRem, apr, ytd: ytdAmt, rem });
         } else {
           const name  = ytd.names[pn]    || monthly.names[pn]    || String(pn);
@@ -1358,13 +1358,11 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
 
     const totalApr = [...rowsIn,...rowsOut].reduce((s,r)=>s+r.apr,0);
     const totalYTD = [...rowsIn,...rowsOut].reduce((s,r)=>s+r.ytd,0);
-    const negCount = rowsIn.filter(r=>r.rem!==null&&r.rem<0).length;
     document.getElementById('rev-stat-pills').innerHTML = `
       <div class="rev-stat-pill">${monthLabel} Total: <b>${revFmt(totalApr)}</b></div>
       <div class="rev-stat-pill">YTD Total: <b>${revFmt(totalYTD)}</b></div>
       <div class="rev-stat-pill">In Template: <b>${rowsIn.length}</b></div>
       <div class="rev-stat-pill">Not In Template: <b>${rowsOut.length}</b></div>
-      ${negCount>0?`<div class="rev-stat-pill warn">⚠ Negative Remaining: <b>${negCount}</b></div>`:''}
     `;
 
     const cols = ['Project Name','Project #','Prime','Original Remaining',`${monthLabel} Billed`,'YTD Billed','Updated Remaining'];
@@ -1378,9 +1376,7 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
       const alt = i%2===1?' class="alt"':'';
       const remCell = r.rem===null
         ? `<td class="calc-cell">CALC</td>`
-        : r.rem<0
-          ? `<td class="neg">${revFmt(r.rem)}</td>`
-          : `<td class="money">${revFmt(r.rem)}</td>`;
+        : `<td class="money">${revFmt(r.rem)}</td>`;
       html+=`<tr${alt}>
         <td class="pname">${esc(r.name)}</td>
         <td class="pn">${r.pn}</td>
