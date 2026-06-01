@@ -1487,29 +1487,36 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
       const monthLabel = revDetectLabel(monthly.period) || 'Current Month';
       const ytdLabel   = revDetectLabel(ytd.period)     || 'YTD';
 
-      const allProjs = new Set([
+      const invoicedPns = new Set([
         ...Object.keys(monthly.billed).map(Number),
         ...Object.keys(ytd.billed).map(Number)
       ]);
       const rowsIn = [], rowsOut = [];
-      for (const pn of [...allProjs]) {
-        const apr = monthly.billed[pn] || 0;
-        const ytdAmt = ytd.billed[pn] || 0;
-        if (pn in template) {
-          const t = template[pn];
-          const name    = t.name  || ytd.names[pn]    || monthly.names[pn]    || String(pn);
-          const prime   = t.prime || ytd.clients[pn]  || monthly.clients[pn]  || '';
-          const origRem = t.remaining;
-          const rem     = t.remaining !== null ? +Math.max(0, t.remaining - ytdAmt).toFixed(2) : null;
-          rowsIn.push({ pn, name, prime, origRem, apr, ytd: ytdAmt, rem, _order: t.order });
-        } else {
-          const name  = ytd.names[pn]    || monthly.names[pn]    || String(pn);
-          const prime = ytd.clients[pn]  || monthly.clients[pn]  || '';
-          rowsOut.push({ pn, name, prime, apr, ytd: ytdAmt });
-        }
+
+      // Every template project in sheet order, zero-filled if no invoice data
+      const templateEntries = Object.entries(template)
+        .map(([pn, t]) => ({ pn: Number(pn), t }))
+        .sort((a, b) => a.t.order - b.t.order);
+
+      for (const { pn, t } of templateEntries) {
+        const apr    = monthly.billed[pn] || 0;
+        const ytdAmt = ytd.billed[pn]     || 0;
+        const name    = t.name  || ytd.names[pn]   || monthly.names[pn]   || String(pn);
+        const prime   = t.prime || ytd.clients[pn] || monthly.clients[pn] || '';
+        const origRem = t.remaining;
+        const rem     = t.remaining !== null ? +Math.max(0, t.remaining - ytdAmt).toFixed(2) : null;
+        rowsIn.push({ pn, name, prime, origRem, apr, ytd: ytdAmt, rem });
       }
-      rowsIn.sort((a, b) => a._order - b._order);
-      rowsOut.sort((a, b) => a.pn - b.pn);
+
+      // Invoice-only projects not in the template
+      for (const pn of [...invoicedPns].sort((a, b) => a - b)) {
+        if (pn in template) continue;
+        const apr    = monthly.billed[pn] || 0;
+        const ytdAmt = ytd.billed[pn]     || 0;
+        const name   = ytd.names[pn]   || monthly.names[pn]   || String(pn);
+        const prime  = ytd.clients[pn] || monthly.clients[pn] || '';
+        rowsOut.push({ pn, name, prime, apr, ytd: ytdAmt });
+      }
       revParsedData = { rowsIn, rowsOut, monthLabel, ytdLabel };
       revRenderResults(revParsedData);
       revSetStatus('Done.', false);
