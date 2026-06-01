@@ -1407,35 +1407,40 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
 
   function revParseTemplate(wb) {
     const ws = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+    if (!ws['!ref']) return { list: [], byPn: {} };
 
-    // Find the column-header row (contains 'Project' in col B)
-    let dataStart = 0;
-    for (let i = 0; i < rows.length; i++) {
-      const v = rows[i][1];
-      if (v && typeof v === 'string' && v.trim() === 'Project') { dataStart = i + 1; break; }
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    const cell  = (r, c) => { const a = ws[XLSX.utils.encode_cell({r,c})]; return a ? a.v : null; };
+
+    // Find header row: col B === 'Project'
+    let dataStart = range.s.r;
+    for (let r = range.s.r; r <= Math.min(range.e.r, range.s.r + 20); r++) {
+      const v = cell(r, 1);
+      if (v && String(v).trim() === 'Project') { dataStart = r + 1; break; }
     }
 
-    const list  = [];   // ordered project rows
-    const byPn  = {};   // pn -> index in list
+    const list = [];
+    const byPn = {};
 
-    for (let i = dataStart; i < rows.length; i++) {
-      const row = rows[i];
-      const rawName = row[1], rawPn = row[2], rawPrime = row[3], rawRem = row[8];
-
-      // Skip blank or header-like rows
+    // Iterate rows in strict physical order
+    for (let r = dataStart; r <= range.e.r; r++) {
+      const rawName = cell(r, 1);
       if (!rawName) continue;
       const nc = String(rawName).trim();
       if (!nc || nc === '#REF!' || nc.startsWith('=')) continue;
 
-      // Parse project number (may be null for some rows)
+      // Project number — may be absent
       let pn = null;
+      const rawPn = cell(r, 2);
       if (rawPn != null) {
         const s = String(rawPn).trim();
         if (/^\d+$/.test(s)) pn = parseInt(s, 10);
       }
 
-      const pc  = rawPrime && String(rawPrime).trim() !== '#REF!' ? String(rawPrime).trim() : null;
+      const rawPrime = cell(r, 3);
+      const pc = rawPrime && String(rawPrime).trim() !== '#REF!' ? String(rawPrime).trim() : null;
+
+      const rawRem = cell(r, 8);
       const rem = typeof rawRem === 'number' ? rawRem
                 : (rawRem != null && !isNaN(parseFloat(rawRem)) ? parseFloat(rawRem) : null);
 
