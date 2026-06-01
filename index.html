@@ -109,18 +109,36 @@ body::after { content: ''; position: fixed; bottom: -200px; left: -200px;
 .btn { display: inline-flex; align-items: center; gap: 7px;
   padding: 0 20px; height: 42px; border-radius: 999px; border: 1px solid transparent;
   font-family: 'Geist', sans-serif; font-size: 13px; font-weight: 500;
-  letter-spacing: -0.005em; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-.btn:disabled { opacity: 0.38; cursor: not-allowed; }
+  letter-spacing: -0.005em; cursor: pointer; white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s,
+              transform 0.08s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn:active:not(:disabled) { transform: scale(0.94); transition-duration: 0.05s; }
 .btn-primary { background: rgba(255,107,53,0.12); border-color: rgba(255,107,53,0.45); color: var(--accent); }
-.btn-primary:hover:not(:disabled) { background: rgba(255,107,53,0.18); border-color: rgba(255,107,53,0.70); }
+.btn-primary:hover:not(:disabled) { background: rgba(255,107,53,0.20); border-color: rgba(255,107,53,0.70); box-shadow: 0 0 20px rgba(255,107,53,0.15); }
 .btn-ghost { background: rgba(255,255,255,0.04); border-color: var(--border-hi); color: var(--text-sec); }
-.btn-ghost:hover:not(:disabled) { background: rgba(255,255,255,0.07); color: var(--text); }
+.btn-ghost:hover:not(:disabled) { background: rgba(255,255,255,0.08); color: var(--text); border-color: var(--border-mid); }
 .btn-success { background: rgba(74,222,128,0.10); border-color: rgba(74,222,128,0.35); color: var(--green); }
-.btn-success:hover:not(:disabled) { background: rgba(74,222,128,0.16); border-color: rgba(74,222,128,0.55); }
+.btn-success:hover:not(:disabled) { background: rgba(74,222,128,0.18); border-color: rgba(74,222,128,0.55); box-shadow: 0 0 16px rgba(74,222,128,0.12); }
 .btn-outline { background: transparent; border-color: var(--border-hi); color: var(--text-sec); }
 .btn-outline:hover:not(:disabled) { border-color: var(--accent-mid); color: var(--accent); }
 .action-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; align-items: center; }
 .hidden { display: none !important; }
+
+/* — Progress bar — */
+.progress-track { height: 2px; background: var(--border); border-radius: 999px;
+  overflow: hidden; margin-top: 16px; opacity: 0; transition: opacity 0.3s; }
+.progress-track.visible { opacity: 1; }
+.progress-fill { height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-hi));
+  border-radius: 999px; transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
+@keyframes progressPulse {
+  0%,100% { opacity: 1; } 50% { opacity: 0.5; }
+}
+.progress-fill.indeterminate {
+  width: 40% !important;
+  animation: progressPulse 1.2s ease-in-out infinite;
+}
 
 /* — Cards — */
 .card { background: linear-gradient(180deg, rgba(255,255,255,0.022), rgba(255,255,255,0.010));
@@ -145,16 +163,19 @@ tbody tr:hover { background: var(--glass); }
 tbody tr:last-child { border-bottom: none; }
 tbody td { padding: 8px 12px; vertical-align: middle; color: var(--text-sec); }
 
-/* — PTO: Drop zone — */
-#pto-drop-zone { border: 1.5px dashed var(--border-mid); border-radius: 12px;
-  padding: 44px 24px; text-align: center; cursor: pointer;
-  transition: border-color 0.2s, background 0.2s; background: var(--accent-soft); }
-#pto-drop-zone:hover, #pto-drop-zone.drag-over { border-color: var(--accent); background: rgba(255,107,53,0.12); }
+/* — Unified drop zone — */
+.drop-zone { border: 1.5px dashed var(--border-mid); border-radius: 12px;
+  padding: 40px 24px; text-align: center; cursor: pointer; background: var(--accent-soft);
+  transition: border-color 0.2s, background 0.2s, transform 0.1s; }
+.drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: rgba(255,107,53,0.12); transform: translateY(-1px); }
+.drop-zone:active { transform: translateY(0); }
+#pto-drop-zone { /* inherits .drop-zone */ }
 .dz-icon { width: 44px; height: 44px; background: var(--accent-soft); border: 1px solid var(--accent-mid);
   border-radius: 12px; display: inline-flex; align-items: center; justify-content: center;
-  margin-bottom: 14px; color: var(--accent); }
+  margin: 0 auto 14px; color: var(--accent); transition: transform 0.2s, box-shadow 0.2s; }
+.drop-zone:hover .dz-icon { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(255,107,53,0.2); }
 .dz-title { font-size: 14px; font-weight: 500; color: var(--text-sec); margin-bottom: 4px; }
-.dz-title strong { color: var(--accent); cursor: pointer; }
+.dz-title strong { color: var(--accent); }
 .dz-hint { font-family: 'Geist Mono', monospace; font-size: 10.5px; font-weight: 500;
   letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); }
 
@@ -211,27 +232,16 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 .pto-empty { text-align: center; padding: 48px 24px; color: var(--text-dim); font-size: 13px; }
 .pto-empty svg { margin-bottom: 12px; opacity: 0.3; }
 
-/* — GL: Upload zone — */
-.gl-upload-zone { border: 1.5px dashed rgba(255,107,53,0.35); border-radius: 12px;
-  background: linear-gradient(180deg, rgba(255,107,53,0.04), rgba(255,107,53,0.01));
-  padding: 48px 32px; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 32px; }
-.gl-upload-zone:hover, .gl-upload-zone.drag-over { border-color: var(--accent);
-  background: linear-gradient(180deg, rgba(255,107,53,0.08), rgba(255,107,53,0.03)); }
-.upload-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.7; }
-.gl-upload-zone h3 { font-family: 'Fraunces', serif; font-variation-settings: 'opsz' 36;
-  font-size: 18px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
-.gl-upload-zone p { font-size: 13px; color: var(--text-muted); }
-.gl-upload-zone p span { color: var(--accent); }
-
-.file-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
-.file-chip { display: flex; align-items: center; gap: 8px; background: var(--surface-2);
-  border: 1px solid var(--border-mid); border-radius: 999px; padding: 6px 14px;
-  font-size: 13px; color: var(--text-sec); }
-.file-chip .remove { cursor: pointer; color: var(--text-dim); font-size: 16px; line-height: 1; transition: color 0.15s; }
-.file-chip .remove:hover { color: #F87171; }
-.file-chip .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.file-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.file-chip { display: inline-flex; align-items: center; gap: 8px; background: var(--accent-soft);
+  border: 1px solid var(--accent-mid); border-radius: 999px; padding: 5px 12px;
+  font-size: 12px; font-weight: 500; color: var(--accent); }
+.file-chip .remove { cursor: pointer; color: var(--accent); font-size: 14px; line-height: 1;
+  opacity: 0.6; transition: opacity 0.15s; background: none; border: none; padding: 0; }
+.file-chip .remove:hover { opacity: 1; }
+.file-chip .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
 .file-chip .status-dot.done { background: var(--green); }
-.gl-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 40px; }
+.gl-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
 
 .instructions-card { background: linear-gradient(180deg, rgba(255,107,53,0.06), rgba(255,107,53,0.02));
   border: 1px solid rgba(255,107,53,0.20); border-radius: 12px; padding: 20px 24px; margin-bottom: 32px; }
@@ -296,8 +306,8 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 .unmapped-pill { font-family: 'Geist Mono', monospace; font-size: 11px; background: var(--surface-2);
   border: 1px solid var(--border-mid); border-radius: 4px; padding: 3px 8px; color: var(--text-muted); }
 .gl-empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
-.gl-empty .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
-.gl-empty p { font-size: 14px; }
+.gl-empty svg { margin-bottom: 14px; opacity: 0.25; }
+.gl-empty p { font-size: 13px; }
 
 /* — Revenue Parser — */
 .rev-upload-grid {
@@ -319,8 +329,10 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 .rev-upload-zone:hover, .rev-upload-zone.drag-over { border-color: rgba(255,107,53,0.55); background: rgba(255,107,53,0.10); border-style: solid; }
 .rev-upload-zone.loaded { border-color: rgba(255,107,53,0.40); background: var(--accent-soft); border-style: solid; }
 .rev-upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-.rev-zone-icon { font-size: 18px; opacity: 0.5; transition: opacity 0.2s; }
-.rev-upload-zone.loaded .rev-zone-icon { opacity: 1; }
+.rev-zone-icon { display: flex; align-items: center; justify-content: center;
+  color: var(--text-dim); transition: color 0.2s, transform 0.2s; }
+.rev-upload-zone:hover .rev-zone-icon { color: var(--accent); transform: translateY(-2px); }
+.rev-upload-zone.loaded .rev-zone-icon { color: var(--accent); }
 .rev-zone-text { font-size: 12px; color: var(--text-muted); transition: color 0.2s; }
 .rev-upload-zone.loaded .rev-zone-text { color: var(--accent); font-weight: 500; font-size: 11px; }
 
@@ -459,16 +471,18 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
   background: rgba(255,107,53,0.12); border: 1px solid rgba(255,107,53,0.50);
   color: var(--accent); font-family: 'Geist', sans-serif;
   font-size: 15px; font-weight: 500; letter-spacing: -0.005em;
-  padding: 0 32px; height: 52px; border-radius: 999px;
-  cursor: pointer; transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  padding: 0 36px; height: 54px; border-radius: 999px; cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s,
+              transform 0.08s cubic-bezier(0.34, 1.56, 0.64, 1);
   opacity: 0; animation: splashUp 0.6s ease 0.65s forwards;
 }
 .splash-btn:hover {
-  background: rgba(255,107,53,0.20); border-color: rgba(255,107,53,0.75);
-  box-shadow: 0 0 32px rgba(255,107,53,0.22);
+  background: rgba(255,107,53,0.22); border-color: rgba(255,107,53,0.80);
+  box-shadow: 0 0 40px rgba(255,107,53,0.25), 0 0 0 1px rgba(255,107,53,0.15);
 }
-.splash-btn svg { transition: transform 0.2s; }
-.splash-btn:hover svg { transform: translateX(3px); }
+.splash-btn:active { transform: scale(0.96); }
+.splash-btn svg { transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.splash-btn:hover svg { transform: translateX(4px); }
 .splash-line {
   width: 1px; height: 40px;
   background: linear-gradient(to bottom, transparent, rgba(255,107,53,0.35), transparent);
@@ -559,7 +573,7 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
     <div class="card-header">
       <div class="card-title">Upload Timesheets</div>
     </div>
-    <div id="pto-drop-zone">
+    <div id="pto-drop-zone" class="drop-zone">
       <div class="dz-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V3m0 0L8 7m4-4l4 4"/>
@@ -660,19 +674,29 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
     </div>
   </div>
 
-  <div class="gl-upload-zone" id="glUploadZone">
-    <div class="upload-icon">📂</div>
-    <h3>Drop IS files here</h3>
-    <p>Drag &amp; drop or <span>click to browse</span></p>
-    <input type="file" id="glFileInput" accept=".xlsx,.xls" multiple style="display:none"/>
-  </div>
-
-  <div class="file-list" id="glFileList"></div>
-
-  <div class="gl-actions">
-    <button class="btn btn-primary" id="glProcessBtn" disabled>Process Files</button>
-    <button class="btn btn-success" id="glDownloadBtn" style="display:none">⬇ Download Excel</button>
-    <button class="btn btn-ghost" id="glClearBtn" style="display:none">Clear All</button>
+  <div class="card">
+    <div class="card-header"><div class="card-title">Upload IS Files</div></div>
+    <div id="glUploadZone" class="drop-zone">
+      <div class="dz-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <p class="dz-title"><strong>Click to browse</strong> or drag &amp; drop</p>
+      <p class="dz-hint">.xlsx · Multiple files</p>
+      <input type="file" id="glFileInput" accept=".xlsx,.xls" multiple style="display:none"/>
+    </div>
+    <div class="file-list" id="glFileList"></div>
+    <div class="gl-actions">
+      <button class="btn btn-primary" id="glProcessBtn" disabled>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        Process Files
+      </button>
+      <button class="btn btn-success hidden" id="glDownloadBtn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download Excel
+      </button>
+      <button class="btn btn-ghost hidden" id="glClearBtn">Clear All</button>
+    </div>
+    <div class="progress-track" id="gl-progress"><div class="progress-fill" id="gl-progress-fill"></div></div>
   </div>
 
   <div class="divider"></div>
@@ -699,7 +723,10 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
   </div>
 
   <div class="results-section" id="glResultsSection">
-    <div class="gl-empty"><div class="empty-icon">📊</div><p>Upload and process files to see results here.</p></div>
+    <div class="gl-empty">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18M15 3v18"/></svg>
+      <p>Upload and process files to see results here.</p>
+    </div>
   </div>
 
   <div class="footer">
@@ -730,7 +757,9 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
       <div class="rev-upload-slot">
         <span class="rev-slot-label">1. Budget Sheet</span>
         <label class="rev-upload-zone" id="rev-zone-template" for="rev-file-template">
-          <div class="rev-zone-icon">📊</div>
+          <div class="rev-zone-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
+          </div>
           <div class="rev-zone-text" id="rev-label-template">Upload Budget Sheet</div>
           <input type="file" id="rev-file-template" accept=".xlsx,.xls" onchange="revHandleFile('template',this)">
         </label>
@@ -738,7 +767,9 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
       <div class="rev-upload-slot">
         <span class="rev-slot-label">2. Month Sheet</span>
         <label class="rev-upload-zone" id="rev-zone-monthly" for="rev-file-monthly">
-          <div class="rev-zone-icon">🧾</div>
+          <div class="rev-zone-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+          </div>
           <div class="rev-zone-text" id="rev-label-monthly">Upload Month Sheet</div>
           <input type="file" id="rev-file-monthly" accept=".xlsx,.xls" onchange="revHandleFile('monthly',this)">
         </label>
@@ -746,7 +777,9 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
       <div class="rev-upload-slot">
         <span class="rev-slot-label">3. YTD Sheet</span>
         <label class="rev-upload-zone" id="rev-zone-ytd" for="rev-file-ytd">
-          <div class="rev-zone-icon">📈</div>
+          <div class="rev-zone-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          </div>
           <div class="rev-zone-text" id="rev-label-ytd">Upload YTD Sheet</div>
           <input type="file" id="rev-file-ytd" accept=".xlsx,.xls" onchange="revHandleFile('ytd',this)">
         </label>
@@ -755,13 +788,13 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 
     <div class="action-row">
       <button class="btn btn-primary" id="rev-run-btn" disabled onclick="revRunParser()">
-        Generate Report →
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        Generate Report
       </button>
-      <button class="btn btn-ghost hidden" id="rev-clear-btn" onclick="revClearAll()">
-        Clear
-      </button>
+      <button class="btn btn-ghost hidden" id="rev-clear-btn" onclick="revClearAll()">Clear</button>
       <span id="rev-status" style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-dim)"></span>
     </div>
+    <div class="progress-track" id="rev-progress"><div class="progress-fill" id="rev-progress-fill"></div></div>
   </div>
 
   <div id="rev-results" class="hidden">
@@ -1127,14 +1160,14 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
     newFiles.forEach(f => { if (!glFiles.find(x => x.name === f.name)) glFiles.push(f); });
     renderFileList();
     processBtn.disabled = glFiles.length === 0;
-    clearBtn.style.display = glFiles.length ? 'inline-flex' : 'none';
+    clearBtn.classList.toggle('hidden', glFiles.length === 0);
   }
 
   window.glRemoveFile = function(name) {
     glFiles = glFiles.filter(f => f.name !== name);
     renderFileList();
     processBtn.disabled = glFiles.length === 0;
-    if (!glFiles.length) clearBtn.style.display = 'none';
+    if (!glFiles.length) clearBtn.classList.add('hidden');
   };
 
   function renderFileList() {
@@ -1146,9 +1179,17 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
   clearBtn.addEventListener('click', () => {
     glFiles = []; glResults = [];
     renderFileList(); processBtn.disabled = true;
-    downloadBtn.style.display = 'none'; clearBtn.style.display = 'none';
+    downloadBtn.classList.add('hidden'); clearBtn.classList.add('hidden');
+    setGlProgress(0, false);
     renderResults([]); renderMonthRef();
   });
+
+  function setGlProgress(pct, visible) {
+    const track = document.getElementById('gl-progress');
+    const fill  = document.getElementById('gl-progress-fill');
+    track.classList.toggle('visible', visible);
+    fill.style.width = pct + '%';
+  }
 
   function extractGLCode(v) {
     if (!v) return null;
@@ -1211,15 +1252,18 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
 
   processBtn.addEventListener('click', async () => {
     processBtn.disabled = true;
-    processBtn.textContent = 'Processing…';
+    processBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Processing…`;
     glResults = [];
-    for (const file of glFiles) {
+    setGlProgress(0, true);
+    for (let i = 0; i < glFiles.length; i++) {
+      const file = glFiles[i];
       const dot = document.getElementById('gldot-' + CSS.escape(file.name));
       try {
         const result = await glParseFile(file);
         glResults.push(result);
         if (dot) dot.classList.add('done');
       } catch (err) { showToast(`Error reading ${file.name}`); }
+      setGlProgress(Math.round(((i + 1) / glFiles.length) * 100), true);
     }
     glResults.sort((a, b) => {
       const ai = MONTH_COLS.findIndex(x => x.month === a.label);
@@ -1228,9 +1272,10 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
     });
     renderResults(glResults);
     renderMonthRef(glResults.map(r => r.label));
-    processBtn.textContent = 'Process Files';
+    processBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Process Files`;
     processBtn.disabled = false;
-    downloadBtn.style.display = glResults.length ? 'inline-flex' : 'none';
+    if (glResults.length) { downloadBtn.classList.remove('hidden'); }
+    setTimeout(() => setGlProgress(0, false), 600);
   });
 
   function glFmt(n) {
@@ -1319,7 +1364,7 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
       XLSX.utils.book_append_sheet(wb, ws, res.label.slice(0,31));
     });
     XLSX.writeFile(wb, `CCS-Budget-Input-${todayStr()}.xlsx`);
-    showToast('Excel file downloaded');
+    showToast('Downloaded');
   });
 })();
 
@@ -1390,7 +1435,8 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
     document.getElementById('rev-results').classList.add('hidden');
     document.getElementById('rev-run-btn').disabled = true;
     document.getElementById('rev-clear-btn').classList.add('hidden');
-    revSetStatus('Upload all three files to begin.', false);
+    revSetProgress(0, false);
+    revSetStatus('', false);
   };
 
   async function revReadWb(file) {
@@ -1490,13 +1536,22 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
     return m2 ? m2[1] : period.substring(0, 40);
   }
 
+  function revSetProgress(pct, visible) {
+    const track = document.getElementById('rev-progress');
+    const fill  = document.getElementById('rev-progress-fill');
+    track.classList.toggle('visible', visible);
+    fill.style.width = pct + '%';
+  }
+
   window.revRunParser = async function() {
-    revSetStatus('Parsing…', false);
+    revSetStatus('', false);
     document.getElementById('rev-run-btn').disabled = true;
+    revSetProgress(15, true);
     try {
       const [wbT, wbM, wbY] = await Promise.all([
         revReadWb(revFiles.template), revReadWb(revFiles.monthly), revReadWb(revFiles.ytd)
       ]);
+      revSetProgress(50, true);
       const { list: templateList, byPn: templateByPn } = revParseTemplate(wbT);
       const monthly  = revParseInvoiceLog(wbM);
       const ytd      = revParseInvoiceLog(wbY);
@@ -1532,11 +1587,14 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
         const prime  = ytd.clients[pn] || monthly.clients[pn] || '';
         rowsOut.push({ pn, name, prime, apr, ytd: ytdAmt });
       }
+      revSetProgress(85, true);
       revParsedData = { rowsIn, rowsOut, monthLabel, ytdLabel };
       revRenderResults(revParsedData);
-      revSetStatus('Done.', false);
+      revSetProgress(100, true);
+      setTimeout(() => revSetProgress(0, false), 600);
     } catch(err) {
       revSetStatus('Error: ' + err.message, true);
+      revSetProgress(0, false);
     }
     document.getElementById('rev-run-btn').disabled = false;
   };
