@@ -1406,45 +1406,55 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
   }
 
   function revParseTemplate(wb) {
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    if (!ws['!ref']) return { list: [], byPn: {} };
+    // Find 'Template' sheet by name, fall back to first sheet
+    const sheetName = wb.SheetNames.find(n => /template/i.test(n.trim())) || wb.SheetNames[0];
+    const ws = wb.Sheets[sheetName];
+    if (!ws || !ws['!ref']) return { list: [], byPn: {} };
 
     const range = XLSX.utils.decode_range(ws['!ref']);
-    const cell  = (r, c) => { const a = ws[XLSX.utils.encode_cell({r,c})]; return a ? a.v : null; };
 
-    // Find header row: col B === 'Project'
+    // Get cell value safely — returns null for missing, error, or blank cells
+    function cv(r, c) {
+      const a = ws[XLSX.utils.encode_cell({ r, c })];
+      if (!a) return null;
+      if (a.t === 'e') return null;              // formula error → treat as blank
+      if (a.t === 'b') return null;              // boolean → not useful here
+      if (a.v === null || a.v === undefined) return null;
+      return a.v;
+    }
+
+    // Find header row (col B = 'Project') within first 30 rows
     let dataStart = range.s.r;
-    for (let r = range.s.r; r <= Math.min(range.e.r, range.s.r + 20); r++) {
-      const v = cell(r, 1);
-      if (v && String(v).trim() === 'Project') { dataStart = r + 1; break; }
+    for (let r = range.s.r; r <= Math.min(range.e.r, range.s.r + 30); r++) {
+      const v = cv(r, 1);
+      if (v !== null && String(v).trim() === 'Project') { dataStart = r + 1; break; }
     }
 
     const list = [];
     const byPn = {};
 
-    // Iterate rows in strict physical order
     for (let r = dataStart; r <= range.e.r; r++) {
-      const rawName = cell(r, 1);
-      if (!rawName) continue;
-      const nc = String(rawName).trim();
-      if (!nc || nc === '#REF!' || nc.startsWith('=')) continue;
+      const rawPn   = cv(r, 2);   // col C — project number
+      const rawName = cv(r, 1);   // col B — project name
 
-      // Project number — may be absent
+      // Need at least a name OR a project number to be a real row
+      const hasName = rawName !== null && String(rawName).trim().length > 0;
+      const hasPn   = rawPn  !== null && /^\d+$/.test(String(rawPn).trim());
+      if (!hasName && !hasPn) continue;
+
+      const nc = hasName ? String(rawName).trim() : '';
       let pn = null;
-      const rawPn = cell(r, 2);
-      if (rawPn != null) {
-        const s = String(rawPn).trim();
-        if (/^\d+$/.test(s)) pn = parseInt(s, 10);
-      }
+      if (hasPn) pn = parseInt(String(rawPn).trim(), 10);
 
-      const rawPrime = cell(r, 3);
-      const pc = rawPrime && String(rawPrime).trim() !== '#REF!' ? String(rawPrime).trim() : null;
+      const rawPrime = cv(r, 3);
+      const pc = rawPrime !== null ? String(rawPrime).trim() : null;
 
-      const rawRem = cell(r, 8);
-      const rem = typeof rawRem === 'number' ? rawRem
-                : (rawRem != null && !isNaN(parseFloat(rawRem)) ? parseFloat(rawRem) : null);
+      const rawRem = cv(r, 8);
+      const rem = typeof rawRem === 'number'
+        ? rawRem
+        : (rawRem !== null && !isNaN(parseFloat(rawRem)) ? parseFloat(rawRem) : null);
 
-      const entry = { pn, name: nc, prime: pc, remaining: rem };
+      const entry = { pn, name: nc || String(pn), prime: pc, remaining: rem };
       const idx = list.push(entry) - 1;
       if (pn !== null && !(pn in byPn)) byPn[pn] = idx;
     }
@@ -1547,8 +1557,8 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
     document.getElementById('rev-stat-pills').innerHTML = `
       <div class="rev-stat-pill">${monthLabel} Total: <b>${revFmt(totalApr)}</b></div>
       <div class="rev-stat-pill">YTD Total: <b>${revFmt(totalYTD)}</b></div>
-      <div class="rev-stat-pill">In Template: <b>${rowsIn.length}</b></div>
-      <div class="rev-stat-pill">Not In Template: <b>${rowsOut.length}</b></div>
+      <div class="rev-stat-pill">Template rows: <b>${rowsIn.length}</b></div>
+      <div class="rev-stat-pill">Not in template: <b>${rowsOut.length}</b></div>
     `;
 
     const cols = ['Project Name','Project #','Prime','Original Remaining',`${monthLabel} Billed`,'YTD Billed','Updated Remaining'];
