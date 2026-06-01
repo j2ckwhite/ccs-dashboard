@@ -1401,6 +1401,7 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
     const ws = wb.Sheets[wb.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
     const map = {};
+    let order = 0;
     for (const row of rows) {
       const rawPn = row[2], name = row[1], prime = row[3], remaining = row[8];
       if (rawPn == null) continue;
@@ -1412,6 +1413,7 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
       const rem = typeof remaining === 'number' ? remaining
                 : (remaining != null ? parseFloat(remaining) : null);
       map[pn] = {
+        order: order++,
         name:  (nc && nc !== '#REF!') ? nc : null,
         prime: (pc && pc !== '#REF!') ? pc : null,
         remaining: (rem != null && !isNaN(rem)) ? rem : null
@@ -1466,7 +1468,7 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
         ...Object.keys(ytd.billed).map(Number)
       ]);
       const rowsIn = [], rowsOut = [];
-      for (const pn of [...allProjs].sort((a,b) => a-b)) {
+      for (const pn of [...allProjs]) {
         const apr = monthly.billed[pn] || 0;
         const ytdAmt = ytd.billed[pn] || 0;
         if (pn in template) {
@@ -1475,13 +1477,15 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
           const prime   = t.prime || ytd.clients[pn]  || monthly.clients[pn]  || '';
           const origRem = t.remaining;
           const rem     = t.remaining !== null ? +Math.max(0, t.remaining - ytdAmt).toFixed(2) : null;
-          rowsIn.push({ pn, name, prime, origRem, apr, ytd: ytdAmt, rem });
+          rowsIn.push({ pn, name, prime, origRem, apr, ytd: ytdAmt, rem, _order: t.order });
         } else {
           const name  = ytd.names[pn]    || monthly.names[pn]    || String(pn);
           const prime = ytd.clients[pn]  || monthly.clients[pn]  || '';
           rowsOut.push({ pn, name, prime, apr, ytd: ytdAmt });
         }
       }
+      rowsIn.sort((a, b) => a._order - b._order);
+      rowsOut.sort((a, b) => a.pn - b.pn);
       revParsedData = { rowsIn, rowsOut, monthLabel, ytdLabel };
       revRenderResults(revParsedData);
       revSetStatus('Done.', false);
