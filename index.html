@@ -91,20 +91,19 @@ body::after { content: ''; position: fixed; bottom: -200px; left: -200px;
 
 /* — Shared layout — */
 .app { position: relative; z-index: 1; max-width: 1080px;
-  margin: 0 auto; padding: 40px 24px 100px; }
+  margin: 0 auto; padding: 32px 24px 80px; }
 
 .header { display: flex; align-items: flex-start; justify-content: space-between;
-  gap: 16px; margin-bottom: 40px; }
-.eyebrow { font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 500;
-  letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+  gap: 16px; margin-bottom: 24px; }
+.eyebrow { font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
 .header h1 { font-family: 'Fraunces', serif; font-variation-settings: 'opsz' 96, 'SOFT' 30;
-  font-size: clamp(26px, 4vw, 36px); font-weight: 400; letter-spacing: -0.025em;
+  font-size: clamp(22px, 3.2vw, 30px); font-weight: 400; letter-spacing: -0.025em;
   color: var(--text); line-height: 1.15; }
 .header h1 em { font-style: italic; color: var(--accent); }
-.header-desc { font-size: 14px; color: var(--text-muted); margin-top: 8px; line-height: 1.6; }
 
 .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border-mid), transparent);
-  margin: 0 0 32px; }
+  margin: 0 0 20px; }
 
 /* — Buttons — */
 .btn { display: inline-flex; align-items: center; gap: 7px;
@@ -124,13 +123,13 @@ body::after { content: ''; position: fixed; bottom: -200px; left: -200px;
 .hidden { display: none !important; }
 
 /* — Cards — */
-.card { background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.012));
-  border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 20px;
+.card { background: linear-gradient(180deg, rgba(255,255,255,0.022), rgba(255,255,255,0.010));
+  border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px;
   backdrop-filter: blur(14px); page-break-inside: avoid; }
-.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
-.card-title { font-family: 'Fraunces', serif; font-variation-settings: 'opsz' 36;
-  font-size: 16px; font-weight: 500; letter-spacing: -0.015em; color: var(--text); }
-.card-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.card-title { font-family: 'Geist', sans-serif; font-size: 13px; font-weight: 600;
+  letter-spacing: -0.005em; color: var(--text-sec); text-transform: uppercase;
+  font-family: 'Geist Mono', monospace; font-size: 10.5px; letter-spacing: 0.12em; }
 
 /* — Tables — */
 .table-wrap { overflow-x: auto; }
@@ -550,17 +549,15 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 <div class="app">
   <div class="header">
     <div class="header-left">
-      <div class="eyebrow">Timesheet Tools</div>
+      <div class="eyebrow">Timesheets</div>
       <h1>PTO / Leave <em>Extractor</em></h1>
-      <p class="header-desc">Upload Excel timesheets to extract PTO, Vacation, and Holiday entries across your team.</p>
     </div>
   </div>
   <div class="divider"></div>
 
   <div class="card">
     <div class="card-header">
-      <div><div class="card-title">Upload Timesheets</div>
-        <div class="card-sub">Drag in multiple files or click to browse</div></div>
+      <div class="card-title">Upload Timesheets</div>
     </div>
     <div id="pto-drop-zone">
       <div class="dz-icon">
@@ -568,8 +565,8 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
           <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V3m0 0L8 7m4-4l4 4"/>
         </svg>
       </div>
-      <p class="dz-title"><strong>Click to browse</strong> or drag &amp; drop files here</p>
-      <p class="dz-hint">.xlsx &amp; .xlsm · Multiple files supported</p>
+      <p class="dz-title"><strong>Click to browse</strong> or drag &amp; drop</p>
+      <p class="dz-hint">.xlsx · .xlsm · Multiple files</p>
     </div>
     <input type="file" id="pto-file-input" accept=".xlsx,.xlsm" multiple style="display:none"/>
     <div id="pto-chips"></div>
@@ -588,8 +585,7 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
   <div id="pto-errors"></div>
 
   <div class="card" id="pto-stats-card" style="display:none">
-    <div class="card-header"><div><div class="card-title">Results</div>
-      <div class="card-sub">Extracted across all uploaded files</div></div></div>
+    <div class="card-header"><div class="card-title">Results</div></div>
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-value" id="pto-stat-entries">0</div><div class="stat-label">Total Entries</div></div>
       <div class="stat-card"><div class="stat-value" id="pto-stat-hours">0</div><div class="stat-label">Total Hours</div></div>
@@ -599,8 +595,7 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
   </div>
 
   <div class="card" id="pto-summary-card" style="display:none">
-    <div class="card-header"><div><div class="card-title">Hours by Employee &amp; Cost Code</div>
-      <div class="card-sub">Totals rolled up across all dates and files</div></div></div>
+    <div class="card-header"><div class="card-title">Hours by Employee</div></div>
     <div class="table-wrap">
       <table><thead><tr><th>Employee</th><th>Cost Code</th><th style="text-align:right">Total Hours</th></tr></thead>
         <tbody id="pto-summary-body"></tbody></table>
@@ -608,8 +603,7 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
   </div>
 
   <div class="card" id="pto-table-card" style="display:none">
-    <div class="card-header"><div><div class="card-title">Detailed Entries</div>
-      <div class="card-sub">Every individual line item — click any cell to edit</div></div></div>
+    <div class="card-header"><div class="card-title">Detailed Entries</div></div>
     <div class="table-wrap">
       <table id="pto-results-table">
         <thead><tr><th>Name</th><th>Date</th><th style="width:80px">Hours</th>
@@ -630,10 +624,8 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
   </div>
 
   <div class="card" id="pto-download-card" style="display:none">
-    <div class="card-header"><div><div class="card-title">Export</div>
-      <div class="card-sub">Download results as Excel</div></div></div>
+    <div class="card-header"><div class="card-title">Export</div></div>
     <div class="download-group">
-      <span class="download-label">Individual</span>
       <button class="btn btn-outline" onclick="ptoDownload('detail')">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Detail Only
@@ -651,7 +643,6 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
   </div>
 
   <div class="footer">
-    <div class="footer-brand">CCS International · <span>PTO Extractor</span></div>
     <div class="footer-brand">Built by <span>RoleMade</span></div>
   </div>
 </div>
@@ -664,16 +655,15 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 <div class="app">
   <div class="header">
     <div class="header-left">
-      <div class="eyebrow">CCS International — Finance</div>
+      <div class="eyebrow">Finance</div>
       <h1>Transaction <em>Parser</em></h1>
-      <p class="header-desc">Upload monthly IS files. The tool maps every GL code to the Budget Comp category and produces values ready to paste in.</p>
     </div>
   </div>
 
   <div class="gl-upload-zone" id="glUploadZone">
     <div class="upload-icon">📂</div>
-    <h3>Drop monthly IS files here</h3>
-    <p>Drag one or multiple files, or <span>click to browse</span></p>
+    <h3>Drop IS files here</h3>
+    <p>Drag &amp; drop or <span>click to browse</span></p>
     <input type="file" id="glFileInput" accept=".xlsx,.xls" multiple style="display:none"/>
   </div>
 
@@ -713,7 +703,6 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
   </div>
 
   <div class="footer">
-    <div class="footer-brand">CCS International · <span>Transaction Parser</span></div>
     <div class="footer-brand">Built by <span>RoleMade</span></div>
   </div>
 </div>
@@ -726,17 +715,15 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 <div class="app">
   <div class="header">
     <div class="header-left">
-      <div class="eyebrow">CCS International — Finance</div>
+      <div class="eyebrow">Finance</div>
       <h1>Revenue <em>Parser</em></h1>
-      <p class="header-desc">Upload the three monthly files to generate your revenue summary — billed this month, YTD, and updated remaining per project.</p>
     </div>
   </div>
   <div class="divider"></div>
 
   <div class="card">
     <div class="card-header">
-      <div><div class="card-title">Upload Files</div>
-        <div class="card-sub">Upload all three files, then click Generate Report</div></div>
+      <div class="card-title">Upload Files</div>
     </div>
 
     <div class="rev-upload-grid">
@@ -773,20 +760,18 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
       <button class="btn btn-ghost hidden" id="rev-clear-btn" onclick="revClearAll()">
         Clear
       </button>
-      <span id="rev-status" style="font-family:'Geist Mono',monospace;font-size:12px;color:var(--text-dim)">
-        Upload all three files to begin.
-      </span>
+      <span id="rev-status" style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-dim)"></span>
     </div>
   </div>
 
   <div id="rev-results" class="hidden">
 
-    <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
       <div>
         <div class="eyebrow" id="rev-period-label"></div>
-        <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:400;letter-spacing:-0.02em;">Revenue Summary</div>
+        <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:400;letter-spacing:-0.02em;margin-top:2px;">Revenue Summary</div>
       </div>
-      <button class="btn btn-outline" onclick="revExportExcel()">Export to Excel ↓</button>
+      <button class="btn btn-outline" onclick="revExportExcel()">Export ↓</button>
     </div>
 
     <div class="rev-stat-pills" id="rev-stat-pills"></div>
@@ -796,7 +781,6 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
   </div>
 
   <div class="footer">
-    <div class="footer-brand">CCS International · <span>Revenue Parser</span></div>
     <div class="footer-brand">Built by <span>RoleMade</span></div>
   </div>
 </div>
@@ -1384,7 +1368,7 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
     const any   = revFiles.template || revFiles.monthly || revFiles.ytd;
     document.getElementById('rev-run-btn').disabled = !ready;
     document.getElementById('rev-clear-btn').classList.toggle('hidden', !any);
-    if (ready) revSetStatus('Ready — click Generate Report.', false);
+    if (ready) revSetStatus('', false);
   }
 
   function revSetStatus(msg, isError) {
@@ -1550,7 +1534,7 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
     const thRow = `<thead><tr>${cols.map((c,i)=>`<th${i>=3?' class="r"':''}>${c}</th>`).join('')}</tr></thead>`;
 
     let html = `
-      <div class="rev-section-hdr in">✦ ${rowsIn.length} projects in budget template — remaining auto-calculated</div>
+      <div class="rev-section-hdr in">In Template · ${rowsIn.length} projects</div>
       <table class="rev-table">${thRow}<tbody>`;
 
     rowsIn.forEach((r,i) => {
@@ -1579,7 +1563,7 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
     </tr></tbody></table>`;
 
     if (rowsOut.length) {
-      html+=`<div class="rev-section-hdr out">⚠ ${rowsOut.length} projects not in budget template — calculate remaining manually</div>
+      html+=`<div class="rev-section-hdr out">Not In Template · ${rowsOut.length} projects — calculate remaining manually</div>
         <table class="rev-table">${thRow}<tbody>`;
       rowsOut.forEach((r,i) => {
         const alt = i%2===1?' class="alt"':'';
