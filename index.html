@@ -1256,16 +1256,20 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
     const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
     const map = {};
     for (const row of rows) {
-      const projNum = row[2], name = row[1], prime = row[3], remaining = row[8];
-      if (projNum && typeof projNum === 'number' && name && typeof name === 'string') {
-        const nc = name.trim(), pc = (prime && typeof prime === 'string' && prime.trim() !== '') ? prime.trim() : null;
-        const rem = (typeof remaining === 'number') ? remaining : null;
-        map[Math.round(projNum)] = {
-          name: (nc && nc !== '#REF!') ? nc : null,
-          prime: (pc && pc !== '#REF!') ? pc : null,
-          remaining: rem
-        };
-      }
+      const rawPn = row[2], name = row[1], prime = row[3], remaining = row[8];
+      if (rawPn == null) continue;
+      const pnStr = String(rawPn).trim();
+      if (!/^\d+$/.test(pnStr)) continue;
+      const pn = parseInt(pnStr, 10);
+      const nc = name && typeof name === 'string' ? name.trim() : null;
+      const pc = prime && typeof prime === 'string' ? prime.trim() : null;
+      const rem = typeof remaining === 'number' ? remaining
+                : (remaining != null ? parseFloat(remaining) : null);
+      map[pn] = {
+        name:  (nc && nc !== '#REF!') ? nc : null,
+        prime: (pc && pc !== '#REF!') ? pc : null,
+        remaining: (rem != null && !isNaN(rem)) ? rem : null
+      };
     }
     return map;
   }
@@ -1277,13 +1281,16 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
     if (rows[2] && rows[2][11]) period = String(rows[2][11]).trim();
     const billed = {}, names = {}, clients = {};
     for (const row of rows) {
-      const pn = row[3], name = row[4], client = row[7], amount = row[8];
-      if (pn && typeof pn === 'number' && typeof amount === 'number') {
-        const p = Math.round(pn);
-        billed[p] = (billed[p] || 0) + amount;
-        if (!names[p] && name && String(name).trim()) names[p] = String(name).trim();
-        if (!clients[p] && client && String(client).trim()) clients[p] = String(client).trim();
-      }
+      const rawPn = row[3], name = row[4], client = row[7], amount = row[8];
+      if (rawPn == null || amount == null) continue;
+      const pnStr = String(rawPn).trim();
+      if (!/^\d+$/.test(pnStr)) continue;
+      const p = parseInt(pnStr, 10);
+      const amt = typeof amount === 'number' ? amount : parseFloat(amount);
+      if (isNaN(amt)) continue;
+      billed[p] = (billed[p] || 0) + amt;
+      if (!names[p] && name && String(name).trim()) names[p] = String(name).trim();
+      if (!clients[p] && client && String(client).trim()) clients[p] = String(client).trim();
     }
     return { billed, names, clients, period };
   }
