@@ -1325,10 +1325,11 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
         const ytdAmt = ytd.billed[pn] || 0;
         if (pn in template) {
           const t = template[pn];
-          const name  = t.name  || ytd.names[pn]    || monthly.names[pn]    || String(pn);
-          const prime = t.prime || ytd.clients[pn]  || monthly.clients[pn]  || '';
-          const rem   = t.remaining !== null ? +(t.remaining - ytdAmt).toFixed(2) : null;
-          rowsIn.push({ pn, name, prime, apr, ytd: ytdAmt, rem });
+          const name    = t.name  || ytd.names[pn]    || monthly.names[pn]    || String(pn);
+          const prime   = t.prime || ytd.clients[pn]  || monthly.clients[pn]  || '';
+          const origRem = t.remaining;
+          const rem     = t.remaining !== null ? +(t.remaining - ytdAmt).toFixed(2) : null;
+          rowsIn.push({ pn, name, prime, origRem, apr, ytd: ytdAmt, rem });
         } else {
           const name  = ytd.names[pn]    || monthly.names[pn]    || String(pn);
           const prime = ytd.clients[pn]  || monthly.clients[pn]  || '';
@@ -1366,7 +1367,7 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
       ${negCount>0?`<div class="rev-stat-pill warn">⚠ Negative Remaining: <b>${negCount}</b></div>`:''}
     `;
 
-    const cols = ['Project #','Project Name','Prime',`${monthLabel} Billed`,'YTD Billed','Updated Remaining'];
+    const cols = ['Project Name','Project #','Prime','Original Remaining',`${monthLabel} Billed`,'YTD Billed','Updated Remaining'];
     const thRow = `<thead><tr>${cols.map((c,i)=>`<th${i>=3?' class="r"':''}>${c}</th>`).join('')}</tr></thead>`;
 
     let html = `
@@ -1381,9 +1382,10 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
           ? `<td class="neg">${revFmt(r.rem)}</td>`
           : `<td class="money">${revFmt(r.rem)}</td>`;
       html+=`<tr${alt}>
-        <td class="pn">${r.pn}</td>
         <td class="pname">${esc(r.name)}</td>
+        <td class="pn">${r.pn}</td>
         <td class="prime-col">${esc(r.prime)}</td>
+        <td class="money${r.origRem===null?' zero':''}">${r.origRem!==null?revFmt(r.origRem):'—'}</td>
         <td class="money${r.apr===0?' zero':''}">${r.apr===0?'—':revFmt(r.apr)}</td>
         <td class="money">${revFmt(r.ytd)}</td>
         ${remCell}
@@ -1393,7 +1395,7 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
     const inApr = rowsIn.reduce((s,r)=>s+r.apr,0);
     const inYTD = rowsIn.reduce((s,r)=>s+r.ytd,0);
     html+=`<tr class="totals-row">
-      <td colspan="3" class="lbl">Subtotal — In Template</td>
+      <td colspan="4" class="lbl">Subtotal — In Template</td>
       <td class="r money">${revFmt(inApr)}</td>
       <td class="r money">${revFmt(inYTD)}</td>
       <td></td>
@@ -1405,9 +1407,10 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
       rowsOut.forEach((r,i) => {
         const alt = i%2===1?' class="alt"':'';
         html+=`<tr${alt}>
-          <td class="pn">${r.pn}</td>
           <td class="pname">${esc(r.name)}</td>
+          <td class="pn">${r.pn}</td>
           <td class="prime-col">${esc(r.prime)}</td>
+          <td class="calc-cell">CALC</td>
           <td class="money${r.apr===0?' zero':''}">${r.apr===0?'—':revFmt(r.apr)}</td>
           <td class="money">${revFmt(r.ytd)}</td>
           <td class="calc-cell">CALC</td>
@@ -1416,7 +1419,7 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
       const outApr = rowsOut.reduce((s,r)=>s+r.apr,0);
       const outYTD = rowsOut.reduce((s,r)=>s+r.ytd,0);
       html+=`<tr class="totals-row">
-        <td colspan="3" class="lbl">Subtotal — Not In Template</td>
+        <td colspan="4" class="lbl">Subtotal — Not In Template</td>
         <td class="r money">${revFmt(outApr)}</td>
         <td class="r money">${revFmt(outYTD)}</td>
         <td class="calc-cell">CALC</td>
@@ -1431,16 +1434,16 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
     if (!revParsedData) return;
     const { rowsIn, rowsOut, monthLabel, ytdLabel } = revParsedData;
     const wb = XLSX.utils.book_new();
-    const data = [['Project #','Project Name','Prime',`${monthLabel} Billed`,`YTD Billed (${ytdLabel})`,'Updated Remaining']];
-    data.push(['— IN BUDGET TEMPLATE —','','','','','']);
-    rowsIn.forEach(r => data.push([r.pn, r.name, r.prime, r.apr, r.ytd, r.rem!==null?r.rem:'CALC']));
-    data.push(['SUBTOTAL','','', rowsIn.reduce((s,r)=>s+r.apr,0), rowsIn.reduce((s,r)=>s+r.ytd,0),'']);
+    const data = [['Project Name','Project #','Prime','Original Remaining',`${monthLabel} Billed`,`YTD Billed (${ytdLabel})`,'Updated Remaining']];
+    data.push(['— IN BUDGET TEMPLATE —','','','','','','']);
+    rowsIn.forEach(r => data.push([r.name, r.pn, r.prime, r.origRem!==null?r.origRem:'', r.apr, r.ytd, r.rem!==null?r.rem:'CALC']));
+    data.push(['SUBTOTAL','','','', rowsIn.reduce((s,r)=>s+r.apr,0), rowsIn.reduce((s,r)=>s+r.ytd,0),'']);
     data.push([]);
-    data.push(['— NOT IN BUDGET TEMPLATE —','','','','','']);
-    rowsOut.forEach(r => data.push([r.pn, r.name, r.prime, r.apr, r.ytd, 'CALC']));
-    data.push(['SUBTOTAL','','', rowsOut.reduce((s,r)=>s+r.apr,0), rowsOut.reduce((s,r)=>s+r.ytd,0),'CALC']);
+    data.push(['— NOT IN BUDGET TEMPLATE —','','','','','','']);
+    rowsOut.forEach(r => data.push([r.name, r.pn, r.prime, 'CALC', r.apr, r.ytd, 'CALC']));
+    data.push(['SUBTOTAL','','','', rowsOut.reduce((s,r)=>s+r.apr,0), rowsOut.reduce((s,r)=>s+r.ytd,0),'CALC']);
     const ws = XLSX.utils.aoa_to_sheet(data);
-    ws['!cols'] = [14,52,26,16,20,20].map(w=>({wch:w}));
+    ws['!cols'] = [52,14,26,18,16,20,20].map(w=>({wch:w}));
     XLSX.utils.book_append_sheet(wb, ws, 'Revenue Summary');
     const slug = monthLabel.replace(/[^a-zA-Z0-9]/g,'-').replace(/-+/g,'-');
     XLSX.writeFile(wb, `CCS-Revenue-Summary-${slug}.xlsx`);
