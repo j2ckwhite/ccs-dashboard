@@ -317,7 +317,7 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
   background: rgba(255,255,255,0.02); min-height: 88px;
   cursor: pointer; transition: border-color 0.2s, background 0.2s; text-align: center; padding: 16px;
 }
-.rev-upload-zone:hover { border-color: rgba(255,107,53,0.45); background: var(--accent-soft); }
+.rev-upload-zone:hover, .rev-upload-zone.drag-over { border-color: rgba(255,107,53,0.55); background: rgba(255,107,53,0.10); border-style: solid; }
 .rev-upload-zone.loaded { border-color: rgba(255,107,53,0.40); background: var(--accent-soft); border-style: solid; }
 .rev-upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
 .rev-zone-icon { font-size: 18px; opacity: 0.5; transition: opacity 0.2s; }
@@ -1346,14 +1346,38 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
   const revFiles = { template: null, monthly: null, ytd: null };
   let revParsedData = null;
 
-  window.revHandleFile = function(key, input) {
-    const file = input.files[0];
+  function revSetFile(key, file) {
     if (!file) return;
     revFiles[key] = file;
     document.getElementById('rev-zone-' + key).classList.add('loaded');
     document.getElementById('rev-label-' + key).textContent = file.name;
     revCheckReady();
+  }
+
+  window.revHandleFile = function(key, input) {
+    revSetFile(key, input.files[0]);
   };
+
+  // Drag-and-drop for each upload zone
+  ['template', 'monthly', 'ytd'].forEach(key => {
+    const zone = document.getElementById('rev-zone-' + key);
+    zone.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      zone.classList.add('drag-over');
+    });
+    zone.addEventListener('dragleave', e => {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+    });
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      zone.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file) revSetFile(key, file);
+    });
+  });
 
   function revCheckReady() {
     const ready = revFiles.template && revFiles.monthly && revFiles.ytd;
