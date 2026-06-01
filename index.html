@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,700;1,9..144,400&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
-/* ── Reset ── */
+/* — Reset — */
 * { box-sizing: border-box; margin: 0; padding: 0;
   -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 
-/* ── Tokens ── */
+/* — Tokens — */
 :root {
   --bg:         #0A0F1A;
   --bg-deep:    #070B14;
@@ -42,7 +42,6 @@
 html, body { background-color: var(--bg); color: var(--text);
   font-family: 'Geist', sans-serif; min-height: 100vh; }
 
-/* ── Ambient blobs ── */
 body::before { content: ''; position: fixed; top: -180px; right: -180px;
   width: 560px; height: 560px;
   background: radial-gradient(circle, rgba(255,107,53,0.10) 0%, transparent 70%);
@@ -52,12 +51,11 @@ body::after { content: ''; position: fixed; bottom: -200px; left: -200px;
   background: radial-gradient(circle, rgba(10,15,26,0.8) 0%, transparent 70%);
   pointer-events: none; z-index: 0; }
 
-/* ── Grain ── */
 .grain { position: fixed; inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
   opacity: 0.035; pointer-events: none; z-index: 0; }
 
-/* ── Top nav ── */
+/* — Top nav — */
 .top-nav {
   position: sticky; top: 0; z-index: 100;
   background: rgba(7,11,20,0.92);
@@ -86,18 +84,15 @@ body::after { content: ''; position: fixed; bottom: -200px; left: -200px;
   letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); }
 .nav-right span { color: var(--accent); }
 
-/* ── Tab panels ── */
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
 
-/* ── Shared layout ── */
+/* — Shared layout — */
 .app { position: relative; z-index: 1; max-width: 1080px;
   margin: 0 auto; padding: 40px 24px 100px; }
 
-/* ── Shared: Header ── */
 .header { display: flex; align-items: flex-start; justify-content: space-between;
   gap: 16px; margin-bottom: 40px; }
-.header-left {}
 .eyebrow { font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 500;
   letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
 .header h1 { font-family: 'Fraunces', serif; font-variation-settings: 'opsz' 96, 'SOFT' 30;
@@ -106,11 +101,10 @@ body::after { content: ''; position: fixed; bottom: -200px; left: -200px;
 .header h1 em { font-style: italic; color: var(--accent); }
 .header-desc { font-size: 14px; color: var(--text-muted); margin-top: 8px; line-height: 1.6; }
 
-/* ── Shared: Divider ── */
 .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border-mid), transparent);
   margin: 0 0 32px; }
 
-/* ── Shared: Buttons ── */
+/* — Buttons — */
 .btn { display: inline-flex; align-items: center; gap: 7px;
   padding: 0 20px; height: 42px; border-radius: 999px; border: 1px solid transparent;
   font-family: 'Geist', sans-serif; font-size: 13px; font-weight: 500;
@@ -125,8 +119,9 @@ body::after { content: ''; position: fixed; bottom: -200px; left: -200px;
 .btn-outline { background: transparent; border-color: var(--border-hi); color: var(--text-sec); }
 .btn-outline:hover:not(:disabled) { border-color: var(--accent-mid); color: var(--accent); }
 .action-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; align-items: center; }
+.hidden { display: none !important; }
 
-/* ── Shared: Cards ── */
+/* — Cards — */
 .card { background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.012));
   border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 20px;
   backdrop-filter: blur(14px); page-break-inside: avoid; }
@@ -135,7 +130,7 @@ body::after { content: ''; position: fixed; bottom: -200px; left: -200px;
   font-size: 16px; font-weight: 500; letter-spacing: -0.015em; color: var(--text); }
 .card-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
-/* ── Shared: Tables ── */
+/* — Tables — */
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 thead th { background: var(--surface-2); color: var(--text-muted);
@@ -149,7 +144,7 @@ tbody tr:hover { background: var(--glass); }
 tbody tr:last-child { border-bottom: none; }
 tbody td { padding: 8px 12px; vertical-align: middle; color: var(--text-sec); }
 
-/* ── PTO: Drop zone ── */
+/* — PTO: Drop zone — */
 #pto-drop-zone { border: 1.5px dashed var(--border-mid); border-radius: 12px;
   padding: 44px 24px; text-align: center; cursor: pointer;
   transition: border-color 0.2s, background 0.2s; background: var(--accent-soft); }
@@ -162,7 +157,7 @@ tbody td { padding: 8px 12px; vertical-align: middle; color: var(--text-sec); }
 .dz-hint { font-family: 'Geist Mono', monospace; font-size: 10.5px; font-weight: 500;
   letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); }
 
-/* ── PTO: Chips ── */
+/* — PTO: Chips — */
 #pto-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 .chip { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-soft);
   color: var(--accent); border: 1px solid var(--accent-mid); border-radius: 999px;
@@ -171,12 +166,11 @@ tbody td { padding: 8px 12px; vertical-align: middle; color: var(--text-sec); }
   font-size: 14px; line-height: 1; padding: 0; opacity: 0.7; transition: opacity 0.15s; }
 .chip button:hover { opacity: 1; }
 
-/* ── PTO: Errors ── */
 .error-item { background: var(--red-soft); border: 1px solid rgba(248,113,113,0.25);
   border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; font-size: 13px;
   color: var(--red); display: flex; align-items: flex-start; gap: 8px; }
 
-/* ── PTO: Stats ── */
+/* — PTO: Stats — */
 .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 @media (max-width: 600px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
 .stat-card { background: var(--surface-2); border: 1px solid var(--border);
@@ -186,7 +180,7 @@ tbody td { padding: 8px 12px; vertical-align: middle; color: var(--text-sec); }
 .stat-label { font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
   letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); margin-top: 6px; }
 
-/* ── PTO: Table extras ── */
+/* — PTO: Table extras — */
 tbody td input { width: 100%; background: transparent; border: 1px solid transparent;
   color: var(--text); font-size: 13px; font-family: 'Geist', sans-serif;
   padding: 5px 8px; border-radius: 6px; transition: border-color 0.15s, background 0.15s; }
@@ -216,7 +210,7 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 .pto-empty { text-align: center; padding: 48px 24px; color: var(--text-dim); font-size: 13px; }
 .pto-empty svg { margin-bottom: 12px; opacity: 0.3; }
 
-/* ── GL: Upload zone ── */
+/* — GL: Upload zone — */
 .gl-upload-zone { border: 1.5px dashed rgba(255,107,53,0.35); border-radius: 12px;
   background: linear-gradient(180deg, rgba(255,107,53,0.04), rgba(255,107,53,0.01));
   padding: 48px 32px; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 32px; }
@@ -228,7 +222,6 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 .gl-upload-zone p { font-size: 13px; color: var(--text-muted); }
 .gl-upload-zone p span { color: var(--accent); }
 
-/* ── GL: File chips ── */
 .file-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
 .file-chip { display: flex; align-items: center; gap: 8px; background: var(--surface-2);
   border: 1px solid var(--border-mid); border-radius: 999px; padding: 6px 14px;
@@ -239,7 +232,6 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 .file-chip .status-dot.done { background: var(--green); }
 .gl-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 40px; }
 
-/* ── GL: Instructions ── */
 .instructions-card { background: linear-gradient(180deg, rgba(255,107,53,0.06), rgba(255,107,53,0.02));
   border: 1px solid rgba(255,107,53,0.20); border-radius: 12px; padding: 20px 24px; margin-bottom: 32px; }
 .instructions-card .inst-title { font-family: 'Geist Mono', monospace; font-size: 10.5px; font-weight: 500;
@@ -252,7 +244,6 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 .inst-step code { font-family: 'Geist Mono', monospace; font-size: 11.5px;
   background: rgba(255,255,255,0.07); border-radius: 4px; padding: 1px 6px; color: var(--text); }
 
-/* ── GL: Month ref ── */
 .month-ref { background: var(--surface); border: 1px solid var(--border);
   border-radius: 8px; overflow: hidden; margin-bottom: 32px; }
 .month-ref table { width: 100%; border-collapse: collapse; }
@@ -265,7 +256,6 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 .month-ref .active-month td { background: var(--accent-soft); }
 .month-ref .active-month td:last-child { color: var(--accent-hi); }
 
-/* ── GL: Results ── */
 .results-section { margin-top: 8px; }
 .results-month-header { display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
@@ -308,14 +298,81 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 .gl-empty .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
 .gl-empty p { font-size: 14px; }
 
-/* ── Toast ── */
+/* — Revenue Parser — */
+.rev-upload-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px;
+}
+@media (max-width: 640px) { .rev-upload-grid { grid-template-columns: 1fr; } }
+.rev-upload-slot { display: flex; flex-direction: column; gap: 8px; }
+.rev-slot-label {
+  font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted);
+}
+.rev-upload-zone {
+  position: relative; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 6px;
+  border: 1.5px dashed var(--border-mid); border-radius: 10px;
+  background: rgba(255,255,255,0.02); min-height: 88px;
+  cursor: pointer; transition: border-color 0.2s, background 0.2s; text-align: center; padding: 16px;
+}
+.rev-upload-zone:hover { border-color: rgba(255,107,53,0.45); background: var(--accent-soft); }
+.rev-upload-zone.loaded { border-color: rgba(255,107,53,0.40); background: var(--accent-soft); border-style: solid; }
+.rev-upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.rev-zone-icon { font-size: 18px; opacity: 0.5; transition: opacity 0.2s; }
+.rev-upload-zone.loaded .rev-zone-icon { opacity: 1; }
+.rev-zone-text { font-size: 12px; color: var(--text-muted); transition: color 0.2s; }
+.rev-upload-zone.loaded .rev-zone-text { color: var(--accent); font-weight: 500; font-size: 11px; }
+
+.rev-stat-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+.rev-stat-pill {
+  background: var(--surface-2); border: 1px solid var(--border-mid);
+  border-radius: 999px; padding: 5px 14px;
+  font-family: 'Geist Mono', monospace; font-size: 11px; color: var(--text-muted);
+}
+.rev-stat-pill b { color: var(--accent); font-weight: 500; }
+.rev-stat-pill.warn { border-color: rgba(248,113,113,0.3); color: var(--red); }
+.rev-stat-pill.warn b { color: var(--red); }
+
+.rev-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+.rev-section-hdr {
+  padding: 9px 16px;
+  font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.13em; text-transform: uppercase;
+}
+.rev-section-hdr.in { background: rgba(74,222,128,0.07); color: rgba(74,222,128,0.8); border-bottom: 1px solid rgba(74,222,128,0.12); }
+.rev-section-hdr.out { background: rgba(255,107,53,0.07); color: var(--accent); border-top: 1px solid var(--border); border-bottom: 1px solid rgba(255,107,53,0.12); }
+
+.rev-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.rev-table thead th {
+  background: var(--surface-2); color: var(--text-muted);
+  font-family: 'Geist Mono', monospace; font-weight: 500; font-size: 10px;
+  letter-spacing: 0.13em; text-transform: uppercase;
+  padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border-mid); white-space: nowrap;
+}
+.rev-table thead th.r { text-align: right; }
+.rev-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
+.rev-table tbody tr:hover { background: var(--glass); }
+.rev-table tbody tr:last-child { border-bottom: none; }
+.rev-table tbody tr.alt { background: rgba(255,255,255,0.015); }
+.rev-table td { padding: 9px 14px; vertical-align: middle; color: var(--text-sec); }
+.rev-table td.pn { font-family: 'Geist Mono', monospace; font-size: 11.5px; color: var(--text-dim); white-space: nowrap; }
+.rev-table td.pname { color: var(--text); font-weight: 500; }
+.rev-table td.prime-col { font-size: 12px; color: var(--text-muted); }
+.rev-table td.money { font-family: 'Geist Mono', monospace; font-size: 12px; text-align: right; white-space: nowrap; }
+.rev-table td.money.zero { color: var(--text-dim); }
+.rev-table td.neg { font-family: 'Geist Mono', monospace; font-size: 12px; text-align: right; color: var(--red); font-weight: 500; white-space: nowrap; }
+.rev-table td.calc-cell { font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 500; color: var(--accent); text-align: right; letter-spacing: 0.06em; }
+.rev-table tr.totals-row td { border-top: 1px solid var(--border-mid); background: rgba(255,255,255,0.025); font-weight: 600; font-family: 'Geist Mono', monospace; font-size: 12px; color: var(--text); }
+.rev-table tr.totals-row td.lbl { font-family: 'Geist', sans-serif; font-size: 12px; color: var(--text-muted); letter-spacing: 0; }
+
+/* — Toast — */
 #toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
   background: var(--surface-3); border: 1px solid var(--border-hi); border-radius: 999px;
   padding: 10px 20px; font-size: 13px; color: var(--text);
   opacity: 0; transition: all 0.2s; pointer-events: none; z-index: 9999; white-space: nowrap; }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* ── Footer ── */
+/* — Footer — */
 .footer { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .footer-brand { font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
@@ -333,22 +390,23 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 <body>
 <div class="grain"></div>
 
-<!-- ── Top Nav ── -->
+<!-- Top Nav -->
 <nav class="top-nav">
   <div class="nav-brand">
     <div class="nav-logo">CCS</div>
     <div class="nav-name"><strong>CCS International</strong> Internal Tools</div>
   </div>
   <div class="tab-group">
-    <button class="tab-btn active" onclick="switchTab('pto')">PTO Extractor</button>
-    <button class="tab-btn" onclick="switchTab('gl')">Transaction Parser</button>
+    <button class="tab-btn active" data-tab="pto" onclick="switchTab('pto')">PTO Extractor</button>
+    <button class="tab-btn" data-tab="gl" onclick="switchTab('gl')">Transaction Parser</button>
+    <button class="tab-btn" data-tab="revenue" onclick="switchTab('revenue')">Revenue Parser</button>
   </div>
   <div class="nav-right">Built by <span>RoleMade</span></div>
 </nav>
 
-<!-- ══════════════════════════════════════════ -->
-<!--  TAB 1 — PTO EXTRACTOR                    -->
-<!-- ══════════════════════════════════════════ -->
+<!-- ─────────────────────────────────────── -->
+<!--  TAB 1 — PTO EXTRACTOR                 -->
+<!-- ─────────────────────────────────────── -->
 <div id="tab-pto" class="tab-panel active">
 <div class="app">
   <div class="header">
@@ -460,9 +518,9 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 </div>
 </div>
 
-<!-- ══════════════════════════════════════════ -->
-<!--  TAB 2 — TRANSACTION PARSER               -->
-<!-- ══════════════════════════════════════════ -->
+<!-- ─────────────────────────────────────── -->
+<!--  TAB 2 — TRANSACTION PARSER            -->
+<!-- ─────────────────────────────────────── -->
 <div id="tab-gl" class="tab-panel">
 <div class="app">
   <div class="header">
@@ -498,7 +556,7 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
       <div class="inst-step"><span class="inst-num">2</span>
         <span>Go to the sheet for your month. Select cells <code>B1:B65</code> and copy (<code>Ctrl+C</code>).</span></div>
       <div class="inst-step"><span class="inst-num">3</span>
-        <span>Open <strong>Budget Comp 2026</strong> → sheet <strong>YTD Actual &amp; Fcst 26</strong>. Click the cell for the correct month column, row 1 (e.g. <code>Q1</code> for Jan 2026).</span></div>
+        <span>Open <strong>Budget Comp 2026</strong> — sheet <strong>YTD Actual &amp; Fcst 26</strong>. Click the cell for the correct month column, row 1 (e.g. <code>Q1</code> for Jan 2026).</span></div>
       <div class="inst-step"><span class="inst-num">4</span>
         <span>Open Paste Special: <code>Ctrl+Alt+V</code>. Select <strong>Values</strong>, check <strong>Skip Blanks</strong>, click OK.</span></div>
     </div>
@@ -522,16 +580,99 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 </div>
 </div>
 
+<!-- ─────────────────────────────────────── -->
+<!--  TAB 3 — REVENUE PARSER                -->
+<!-- ─────────────────────────────────────── -->
+<div id="tab-revenue" class="tab-panel">
+<div class="app">
+  <div class="header">
+    <div class="header-left">
+      <div class="eyebrow">CCS International — Finance</div>
+      <h1>Revenue <em>Parser</em></h1>
+      <p class="header-desc">Upload the three monthly files to generate your revenue summary — billed this month, YTD, and updated remaining per project.</p>
+    </div>
+  </div>
+  <div class="divider"></div>
+
+  <div class="card">
+    <div class="card-header">
+      <div><div class="card-title">Upload Files</div>
+        <div class="card-sub">Upload all three files, then click Generate Report</div></div>
+    </div>
+
+    <div class="rev-upload-grid">
+      <div class="rev-upload-slot">
+        <span class="rev-slot-label">1. Budget Sheet</span>
+        <label class="rev-upload-zone" id="rev-zone-template" for="rev-file-template">
+          <div class="rev-zone-icon">📊</div>
+          <div class="rev-zone-text" id="rev-label-template">Upload Budget Sheet</div>
+          <input type="file" id="rev-file-template" accept=".xlsx,.xls" onchange="revHandleFile('template',this)">
+        </label>
+      </div>
+      <div class="rev-upload-slot">
+        <span class="rev-slot-label">2. Month Sheet</span>
+        <label class="rev-upload-zone" id="rev-zone-monthly" for="rev-file-monthly">
+          <div class="rev-zone-icon">🧾</div>
+          <div class="rev-zone-text" id="rev-label-monthly">Upload Month Sheet</div>
+          <input type="file" id="rev-file-monthly" accept=".xlsx,.xls" onchange="revHandleFile('monthly',this)">
+        </label>
+      </div>
+      <div class="rev-upload-slot">
+        <span class="rev-slot-label">3. YTD Sheet</span>
+        <label class="rev-upload-zone" id="rev-zone-ytd" for="rev-file-ytd">
+          <div class="rev-zone-icon">📈</div>
+          <div class="rev-zone-text" id="rev-label-ytd">Upload YTD Sheet</div>
+          <input type="file" id="rev-file-ytd" accept=".xlsx,.xls" onchange="revHandleFile('ytd',this)">
+        </label>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn btn-primary" id="rev-run-btn" disabled onclick="revRunParser()">
+        Generate Report →
+      </button>
+      <button class="btn btn-ghost hidden" id="rev-clear-btn" onclick="revClearAll()">
+        Clear
+      </button>
+      <span id="rev-status" style="font-family:'Geist Mono',monospace;font-size:12px;color:var(--text-dim)">
+        Upload all three files to begin.
+      </span>
+    </div>
+  </div>
+
+  <div id="rev-results" class="hidden">
+
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:20px;">
+      <div>
+        <div class="eyebrow" id="rev-period-label"></div>
+        <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:400;letter-spacing:-0.02em;">Revenue Summary</div>
+      </div>
+      <button class="btn btn-outline" onclick="revExportExcel()">Export to Excel ↓</button>
+    </div>
+
+    <div class="rev-stat-pills" id="rev-stat-pills"></div>
+
+    <div class="rev-table-wrap" id="rev-table-wrap"></div>
+
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">CCS International · <span>Revenue Parser</span></div>
+    <div class="footer-brand">Built by <span>RoleMade</span></div>
+  </div>
+</div>
+</div>
+
 <div id="toast"></div>
 
 <script>
-// ── Shared ──────────────────────────────────
+// — Shared ——————————————————————————————
 function switchTab(id) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + id).classList.add('active');
   document.querySelectorAll('.tab-btn').forEach(b => {
-    if (b.textContent.toLowerCase().includes(id === 'pto' ? 'pto' : 'transaction')) b.classList.add('active');
+    if (b.dataset.tab === id) b.classList.add('active');
   });
   window.scrollTo(0, 0);
 }
@@ -542,13 +683,13 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2000);
 }
 function pad(n) { return String(n).padStart(2, '0'); }
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function ptoStr(v) { if (v === null || v === undefined) return ''; return String(v); }
 function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`; }
 
-// ════════════════════════════════════════════
+// ——————————————————————————————————————————
 //  PTO EXTRACTOR
-// ════════════════════════════════════════════
+// ——————————————————————————————————————————
 (function() {
   const uploadedFiles = new Map();
   let rows = [];
@@ -781,9 +922,9 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
   };
 })();
 
-// ════════════════════════════════════════════
+// ——————————————————————————————————————————
 //  TRANSACTION PARSER
-// ════════════════════════════════════════════
+// ——————————————————————————————————————————
 (function() {
   const GL_TO_ROW = {
     50081:16, 60001:35, 70001:35,
@@ -1022,9 +1163,9 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
     const instrData = [
       ['HOW TO USE THIS FILE'],[''],
       ['1. Go to the sheet for your month'],['2. Select cells B1 through B65'],
-      ['3. Copy (Ctrl+C)'],['4. Open Budget Comp 2026 → YTD Actual & Fcst 26'],
+      ['3. Copy (Ctrl+C)'],['4. Open Budget Comp 2026 — YTD Actual & Fcst 26'],
       ['5. Click on Row 1 of the correct month column (see below)'],
-      ['6. Ctrl+Alt+V → Values + Skip Blanks → OK'],[''],
+      ['6. Ctrl+Alt+V — Values + Skip Blanks — OK'],[''],
       ['MONTH','COLUMN','CLICK FIRST'],
       ...MONTH_COLS.map(m => [m.month, `Column ${m.col}`, m.budgetRow]),
     ];
@@ -1050,6 +1191,254 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
     XLSX.writeFile(wb, `CCS-Budget-Input-${todayStr()}.xlsx`);
     showToast('Excel file downloaded');
   });
+})();
+
+// ——————————————————————————————————————————
+//  REVENUE PARSER
+// ——————————————————————————————————————————
+(function() {
+  const revFiles = { template: null, monthly: null, ytd: null };
+  let revParsedData = null;
+
+  window.revHandleFile = function(key, input) {
+    const file = input.files[0];
+    if (!file) return;
+    revFiles[key] = file;
+    document.getElementById('rev-zone-' + key).classList.add('loaded');
+    document.getElementById('rev-label-' + key).textContent = file.name;
+    revCheckReady();
+  };
+
+  function revCheckReady() {
+    const ready = revFiles.template && revFiles.monthly && revFiles.ytd;
+    const any   = revFiles.template || revFiles.monthly || revFiles.ytd;
+    document.getElementById('rev-run-btn').disabled = !ready;
+    document.getElementById('rev-clear-btn').classList.toggle('hidden', !any);
+    if (ready) revSetStatus('Ready — click Generate Report.', false);
+  }
+
+  function revSetStatus(msg, isError) {
+    const el = document.getElementById('rev-status');
+    el.textContent = msg;
+    el.style.color = isError ? 'var(--red)' : 'var(--text-dim)';
+  }
+
+  window.revClearAll = function() {
+    ['template','monthly','ytd'].forEach(key => {
+      revFiles[key] = null;
+      document.getElementById('rev-file-' + key).value = '';
+      document.getElementById('rev-zone-' + key).classList.remove('loaded');
+      document.getElementById('rev-label-' + key).textContent =
+        key === 'template' ? 'Upload Budget Sheet' :
+        key === 'monthly'  ? 'Upload Month Sheet'  : 'Upload YTD Sheet';
+    });
+    revParsedData = null;
+    document.getElementById('rev-results').classList.add('hidden');
+    document.getElementById('rev-run-btn').disabled = true;
+    document.getElementById('rev-clear-btn').classList.add('hidden');
+    revSetStatus('Upload all three files to begin.', false);
+  };
+
+  async function revReadWb(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        try { resolve(XLSX.read(e.target.result, { type: 'array', cellDates: true })); }
+        catch(err) { reject(err); }
+      };
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  function revParseTemplate(wb) {
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+    const map = {};
+    for (const row of rows) {
+      const projNum = row[2], name = row[1], prime = row[3], remaining = row[8];
+      if (projNum && typeof projNum === 'number' && name && typeof name === 'string') {
+        const nc = name.trim(), pc = (prime && typeof prime === 'string' && prime.trim() !== '') ? prime.trim() : null;
+        const rem = (typeof remaining === 'number') ? remaining : null;
+        map[Math.round(projNum)] = {
+          name: (nc && nc !== '#REF!') ? nc : null,
+          prime: (pc && pc !== '#REF!') ? pc : null,
+          remaining: rem
+        };
+      }
+    }
+    return map;
+  }
+
+  function revParseInvoiceLog(wb) {
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+    let period = '';
+    if (rows[2] && rows[2][11]) period = String(rows[2][11]).trim();
+    const billed = {}, names = {}, clients = {};
+    for (const row of rows) {
+      const pn = row[3], name = row[4], client = row[7], amount = row[8];
+      if (pn && typeof pn === 'number' && typeof amount === 'number') {
+        const p = Math.round(pn);
+        billed[p] = (billed[p] || 0) + amount;
+        if (!names[p] && name && String(name).trim()) names[p] = String(name).trim();
+        if (!clients[p] && client && String(client).trim()) clients[p] = String(client).trim();
+      }
+    }
+    return { billed, names, clients, period };
+  }
+
+  function revDetectLabel(period) {
+    const m = period.match(/\(([A-Za-z]{3} \d{4})\).*\(([A-Za-z]{3} \d{4})\)/);
+    if (m) return m[1] === m[2] ? m[1] : `${m[1]} – ${m[2]}`;
+    const m2 = period.match(/\(([^)]+)\)/);
+    return m2 ? m2[1] : period.substring(0, 40);
+  }
+
+  window.revRunParser = async function() {
+    revSetStatus('Parsing…', false);
+    document.getElementById('rev-run-btn').disabled = true;
+    try {
+      const [wbT, wbM, wbY] = await Promise.all([
+        revReadWb(revFiles.template), revReadWb(revFiles.monthly), revReadWb(revFiles.ytd)
+      ]);
+      const template = revParseTemplate(wbT);
+      const monthly  = revParseInvoiceLog(wbM);
+      const ytd      = revParseInvoiceLog(wbY);
+      const monthLabel = revDetectLabel(monthly.period) || 'Current Month';
+      const ytdLabel   = revDetectLabel(ytd.period)     || 'YTD';
+
+      const allProjs = new Set([
+        ...Object.keys(monthly.billed).map(Number),
+        ...Object.keys(ytd.billed).map(Number)
+      ]);
+      const rowsIn = [], rowsOut = [];
+      for (const pn of [...allProjs].sort((a,b) => a-b)) {
+        const apr = monthly.billed[pn] || 0;
+        const ytdAmt = ytd.billed[pn] || 0;
+        if (pn in template) {
+          const t = template[pn];
+          const name  = t.name  || ytd.names[pn]    || monthly.names[pn]    || String(pn);
+          const prime = t.prime || ytd.clients[pn]  || monthly.clients[pn]  || '';
+          const rem   = t.remaining !== null ? +(t.remaining - ytdAmt).toFixed(2) : null;
+          rowsIn.push({ pn, name, prime, apr, ytd: ytdAmt, rem });
+        } else {
+          const name  = ytd.names[pn]    || monthly.names[pn]    || String(pn);
+          const prime = ytd.clients[pn]  || monthly.clients[pn]  || '';
+          rowsOut.push({ pn, name, prime, apr, ytd: ytdAmt });
+        }
+      }
+      revParsedData = { rowsIn, rowsOut, monthLabel, ytdLabel };
+      revRenderResults(revParsedData);
+      revSetStatus('Done.', false);
+    } catch(err) {
+      revSetStatus('Error: ' + err.message, true);
+    }
+    document.getElementById('rev-run-btn').disabled = false;
+  };
+
+  function revFmt(n) {
+    if (typeof n !== 'number') return '—';
+    return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2}).format(n);
+  }
+
+  function revRenderResults({ rowsIn, rowsOut, monthLabel, ytdLabel }) {
+    const resultsEl = document.getElementById('rev-results');
+    resultsEl.classList.remove('hidden');
+
+    document.getElementById('rev-period-label').textContent = `${monthLabel}  ·  YTD ${ytdLabel}`;
+
+    const totalApr = [...rowsIn,...rowsOut].reduce((s,r)=>s+r.apr,0);
+    const totalYTD = [...rowsIn,...rowsOut].reduce((s,r)=>s+r.ytd,0);
+    const negCount = rowsIn.filter(r=>r.rem!==null&&r.rem<0).length;
+    document.getElementById('rev-stat-pills').innerHTML = `
+      <div class="rev-stat-pill">${monthLabel} Total: <b>${revFmt(totalApr)}</b></div>
+      <div class="rev-stat-pill">YTD Total: <b>${revFmt(totalYTD)}</b></div>
+      <div class="rev-stat-pill">In Template: <b>${rowsIn.length}</b></div>
+      <div class="rev-stat-pill">Not In Template: <b>${rowsOut.length}</b></div>
+      ${negCount>0?`<div class="rev-stat-pill warn">⚠ Negative Remaining: <b>${negCount}</b></div>`:''}
+    `;
+
+    const cols = ['Project #','Project Name','Prime',`${monthLabel} Billed`,'YTD Billed','Updated Remaining'];
+    const thRow = `<thead><tr>${cols.map((c,i)=>`<th${i>=3?' class="r"':''}>${c}</th>`).join('')}</tr></thead>`;
+
+    let html = `
+      <div class="rev-section-hdr in">✦ ${rowsIn.length} projects in budget template — remaining auto-calculated</div>
+      <table class="rev-table">${thRow}<tbody>`;
+
+    rowsIn.forEach((r,i) => {
+      const alt = i%2===1?' class="alt"':'';
+      const remCell = r.rem===null
+        ? `<td class="calc-cell">CALC</td>`
+        : r.rem<0
+          ? `<td class="neg">${revFmt(r.rem)}</td>`
+          : `<td class="money">${revFmt(r.rem)}</td>`;
+      html+=`<tr${alt}>
+        <td class="pn">${r.pn}</td>
+        <td class="pname">${esc(r.name)}</td>
+        <td class="prime-col">${esc(r.prime)}</td>
+        <td class="money${r.apr===0?' zero':''}">${r.apr===0?'—':revFmt(r.apr)}</td>
+        <td class="money">${revFmt(r.ytd)}</td>
+        ${remCell}
+      </tr>`;
+    });
+
+    const inApr = rowsIn.reduce((s,r)=>s+r.apr,0);
+    const inYTD = rowsIn.reduce((s,r)=>s+r.ytd,0);
+    html+=`<tr class="totals-row">
+      <td colspan="3" class="lbl">Subtotal — In Template</td>
+      <td class="r money">${revFmt(inApr)}</td>
+      <td class="r money">${revFmt(inYTD)}</td>
+      <td></td>
+    </tr></tbody></table>`;
+
+    if (rowsOut.length) {
+      html+=`<div class="rev-section-hdr out">⚠ ${rowsOut.length} projects not in budget template — calculate remaining manually</div>
+        <table class="rev-table">${thRow}<tbody>`;
+      rowsOut.forEach((r,i) => {
+        const alt = i%2===1?' class="alt"':'';
+        html+=`<tr${alt}>
+          <td class="pn">${r.pn}</td>
+          <td class="pname">${esc(r.name)}</td>
+          <td class="prime-col">${esc(r.prime)}</td>
+          <td class="money${r.apr===0?' zero':''}">${r.apr===0?'—':revFmt(r.apr)}</td>
+          <td class="money">${revFmt(r.ytd)}</td>
+          <td class="calc-cell">CALC</td>
+        </tr>`;
+      });
+      const outApr = rowsOut.reduce((s,r)=>s+r.apr,0);
+      const outYTD = rowsOut.reduce((s,r)=>s+r.ytd,0);
+      html+=`<tr class="totals-row">
+        <td colspan="3" class="lbl">Subtotal — Not In Template</td>
+        <td class="r money">${revFmt(outApr)}</td>
+        <td class="r money">${revFmt(outYTD)}</td>
+        <td class="calc-cell">CALC</td>
+      </tr></tbody></table>`;
+    }
+
+    document.getElementById('rev-table-wrap').innerHTML = html;
+    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  window.revExportExcel = function() {
+    if (!revParsedData) return;
+    const { rowsIn, rowsOut, monthLabel, ytdLabel } = revParsedData;
+    const wb = XLSX.utils.book_new();
+    const data = [['Project #','Project Name','Prime',`${monthLabel} Billed`,`YTD Billed (${ytdLabel})`,'Updated Remaining']];
+    data.push(['— IN BUDGET TEMPLATE —','','','','','']);
+    rowsIn.forEach(r => data.push([r.pn, r.name, r.prime, r.apr, r.ytd, r.rem!==null?r.rem:'CALC']));
+    data.push(['SUBTOTAL','','', rowsIn.reduce((s,r)=>s+r.apr,0), rowsIn.reduce((s,r)=>s+r.ytd,0),'']);
+    data.push([]);
+    data.push(['— NOT IN BUDGET TEMPLATE —','','','','','']);
+    rowsOut.forEach(r => data.push([r.pn, r.name, r.prime, r.apr, r.ytd, 'CALC']));
+    data.push(['SUBTOTAL','','', rowsOut.reduce((s,r)=>s+r.apr,0), rowsOut.reduce((s,r)=>s+r.ytd,0),'CALC']);
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    ws['!cols'] = [14,52,26,16,20,20].map(w=>({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws, 'Revenue Summary');
+    const slug = monthLabel.replace(/[^a-zA-Z0-9]/g,'-').replace(/-+/g,'-');
+    XLSX.writeFile(wb, `CCS-Revenue-Summary-${slug}.xlsx`);
+    showToast('Excel downloaded');
+  };
 })();
 </script>
 </body>
