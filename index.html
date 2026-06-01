@@ -1408,26 +1408,43 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
   function revParseTemplate(wb) {
     const ws = wb.Sheets[wb.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
-    const map = {};
-    let order = 0;
-    for (const row of rows) {
-      const rawPn = row[2], name = row[1], prime = row[3], remaining = row[8];
-      if (rawPn == null) continue;
-      const pnStr = String(rawPn).trim();
-      if (!/^\d+$/.test(pnStr)) continue;
-      const pn = parseInt(pnStr, 10);
-      const nc = name && typeof name === 'string' ? name.trim() : null;
-      const pc = prime && typeof prime === 'string' ? prime.trim() : null;
-      const rem = typeof remaining === 'number' ? remaining
-                : (remaining != null ? parseFloat(remaining) : null);
-      map[pn] = {
-        order: order++,
-        name:  (nc && nc !== '#REF!') ? nc : null,
-        prime: (pc && pc !== '#REF!') ? pc : null,
-        remaining: (rem != null && !isNaN(rem)) ? rem : null
-      };
+
+    // Find the column-header row (contains 'Project' in col B)
+    let dataStart = 0;
+    for (let i = 0; i < rows.length; i++) {
+      const v = rows[i][1];
+      if (v && typeof v === 'string' && v.trim() === 'Project') { dataStart = i + 1; break; }
     }
-    return map;
+
+    const list  = [];   // ordered project rows
+    const byPn  = {};   // pn -> index in list
+
+    for (let i = dataStart; i < rows.length; i++) {
+      const row = rows[i];
+      const rawName = row[1], rawPn = row[2], rawPrime = row[3], rawRem = row[8];
+
+      // Skip blank or header-like rows
+      if (!rawName) continue;
+      const nc = String(rawName).trim();
+      if (!nc || nc === '#REF!' || nc.startsWith('=')) continue;
+
+      // Parse project number (may be null for some rows)
+      let pn = null;
+      if (rawPn != null) {
+        const s = String(rawPn).trim();
+        if (/^\d+$/.test(s)) pn = parseInt(s, 10);
+      }
+
+      const pc  = rawPrime && String(rawPrime).trim() !== '#REF!' ? String(rawPrime).trim() : null;
+      const rem = typeof rawRem === 'number' ? rawRem
+                : (rawRem != null && !isNaN(parseFloat(rawRem)) ? parseFloat(rawRem) : null);
+
+      const entry = { pn, name: nc, prime: pc, remaining: rem };
+      const idx = list.push(entry) - 1;
+      if (pn !== null && !(pn in byPn)) byPn[pn] = idx;
+    }
+
+    return { list, byPn };
   }
 
   function revParseInvoiceLog(wb) {
@@ -1465,7 +1482,7 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
       const [wbT, wbM, wbY] = await Promise.all([
         revReadWb(revFiles.template), revReadWb(revFiles.monthly), revReadWb(revFiles.ytd)
       ]);
-      const template = revParseTemplate(wbT);
+      const { list: templateList, byPn: templateByPn } = revParseTemplate(wbT);
       const monthly  = revParseInvoiceLog(wbM);
       const ytd      = revParseInvoiceLog(wbY);
       const monthLabel = revDetectLabel(monthly.period) || 'Current Month';
@@ -1475,26 +1492,25 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
         ...Object.keys(monthly.billed).map(Number),
         ...Object.keys(ytd.billed).map(Number)
       ]);
+      const matchedPns = new Set();
       const rowsIn = [], rowsOut = [];
 
-      // Every template project in sheet order, zero-filled if no invoice data
-      const templateEntries = Object.entries(template)
-        .map(([pn, t]) => ({ pn: Number(pn), t }))
-        .sort((a, b) => a.t.order - b.t.order);
-
-      for (const { pn, t } of templateEntries) {
-        const apr    = monthly.billed[pn] || 0;
-        const ytdAmt = ytd.billed[pn]     || 0;
-        const name    = t.name  || ytd.names[pn]   || monthly.names[pn]   || String(pn);
-        const prime   = t.prime || ytd.clients[pn] || monthly.clients[pn] || '';
+      // Every template row in sheet order — zero-filled if no invoice data
+      for (const t of templateList) {
+        const pn     = t.pn;
+        const apr    = pn !== null ? (monthly.billed[pn] || 0) : 0;
+        const ytdAmt = pn !== null ? (ytd.billed[pn]     || 0) : 0;
+        const name   = t.name  || (pn !== null ? ytd.names[pn]   || monthly.names[pn]   : '') || String(pn ?? '');
+        const prime  = t.prime || (pn !== null ? ytd.clients[pn] || monthly.clients[pn] : '') || '';
         const origRem = t.remaining;
-        const rem     = t.remaining !== null ? +Math.max(0, t.remaining - ytdAmt).toFixed(2) : null;
+        const rem    = t.remaining !== null ? +Math.max(0, t.remaining - ytdAmt).toFixed(2) : null;
         rowsIn.push({ pn, name, prime, origRem, apr, ytd: ytdAmt, rem });
+        if (pn !== null) matchedPns.add(pn);
       }
 
-      // Invoice-only projects not in the template
+      // Invoice-only projects not in the template at all
       for (const pn of [...invoicedPns].sort((a, b) => a - b)) {
-        if (pn in template) continue;
+        if (matchedPns.has(pn)) continue;
         const apr    = monthly.billed[pn] || 0;
         const ytdAmt = ytd.billed[pn]     || 0;
         const name   = ytd.names[pn]   || monthly.names[pn]   || String(pn);
