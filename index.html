@@ -401,7 +401,7 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 }
 .splash {
   position: fixed; inset: 0; z-index: 1000;
-  background: var(--bg-deep);
+  background: #050810;
   display: flex; align-items: center; justify-content: center;
   animation: splashFadeIn 0.5s ease both;
 }
@@ -410,27 +410,33 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
   pointer-events: none;
 }
 .splash-blob-1 {
-  position: absolute; top: -120px; right: -120px;
-  width: 600px; height: 600px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(245,158,11,0.18) 0%, transparent 65%);
+  position: absolute; top: -10%; right: -5%;
+  width: 55vw; height: 55vw; border-radius: 50%;
+  background: radial-gradient(circle, rgba(245,158,11,0.22) 0%, rgba(245,158,11,0.06) 40%, transparent 70%);
   animation: splashPulse 4s ease-in-out infinite;
   pointer-events: none;
 }
 .splash-blob-2 {
-  position: absolute; bottom: -160px; left: -160px;
-  width: 700px; height: 700px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(245,158,11,0.08) 0%, transparent 65%);
+  position: absolute; bottom: -15%; left: -10%;
+  width: 60vw; height: 60vw; border-radius: 50%;
+  background: radial-gradient(circle, rgba(30,60,140,0.35) 0%, transparent 65%);
   animation: splashPulse 5.5s ease-in-out infinite reverse;
+  pointer-events: none;
+}
+.splash-blob-3 {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(245,158,11,0.07) 0%, transparent 60%);
   pointer-events: none;
 }
 .splash-grid {
   position: absolute; inset: 0;
   background-image:
-    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-  background-size: 72px 72px;
-  -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black, transparent);
-  mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black, transparent);
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-mask-image: radial-gradient(ellipse 65% 65% at 50% 50%, black, transparent);
+  mask-image: radial-gradient(ellipse 65% 65% at 50% 50%, black, transparent);
   pointer-events: none;
 }
 .splash-content {
@@ -439,62 +445,68 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
   text-align: center; gap: 0;
 }
 .splash-logo-img {
-  height: 32px; width: auto; opacity: 0.9; margin-bottom: 36px;
+  height: 36px; width: auto; margin-bottom: 40px;
   opacity: 0; animation: splashUp 0.5s ease 0.1s forwards;
+  filter: drop-shadow(0 0 12px rgba(245,158,11,0.2));
 }
 .splash-badge {
-  font-family: 'Geist Mono', monospace; font-size: 10.5px; font-weight: 500;
-  letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent);
-  background: var(--accent-soft); border: 1px solid var(--accent-mid);
-  border-radius: 999px; padding: 5px 16px; margin-bottom: 32px;
+  font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.28em; text-transform: uppercase; color: rgba(245,158,11,0.9);
+  background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 999px; padding: 6px 20px; margin-bottom: 36px;
+  box-shadow: 0 0 20px rgba(245,158,11,0.08), inset 0 1px 0 rgba(255,255,255,0.06);
   opacity: 0; animation: splashUp 0.5s ease 0.2s forwards;
 }
 .splash-heading {
   font-family: 'Fraunces', serif;
   font-variation-settings: 'opsz' 144, 'SOFT' 50;
-  font-size: clamp(52px, 9vw, 96px);
-  font-weight: 400; letter-spacing: -0.04em; line-height: 1.05;
-  color: var(--text); margin-bottom: 20px;
+  font-size: clamp(60px, 10vw, 110px);
+  font-weight: 400; letter-spacing: -0.04em; line-height: 1.0;
+  color: #fff; margin-bottom: 22px;
+  text-shadow: 0 2px 40px rgba(0,0,0,0.5);
   opacity: 0; animation: splashUp 0.6s ease 0.35s forwards;
 }
 .splash-heading em {
   font-style: italic; color: var(--accent);
   font-variation-settings: 'opsz' 144, 'SOFT' 80;
+  text-shadow: 0 0 60px rgba(245,158,11,0.4);
 }
 .splash-sub {
-  font-family: 'Geist', sans-serif; font-size: clamp(15px, 2vw, 18px);
-  font-weight: 400; color: var(--text-muted); margin-bottom: 52px; line-height: 1.6;
+  font-family: 'Geist', sans-serif; font-size: clamp(14px, 1.8vw, 17px);
+  font-weight: 400; color: rgba(255,255,255,0.45); margin-bottom: 56px; line-height: 1.6;
+  letter-spacing: 0.01em;
   opacity: 0; animation: splashUp 0.6s ease 0.5s forwards;
 }
 .splash-btn {
   display: inline-flex; align-items: center; gap: 10px;
-  background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.50);
-  color: var(--accent); font-family: 'Geist', sans-serif;
-  font-size: 15px; font-weight: 500; letter-spacing: -0.005em;
-  padding: 0 36px; height: 54px; border-radius: 999px; cursor: pointer;
-  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s,
+  background: var(--accent); border: none;
+  color: #000; font-family: 'Geist', sans-serif;
+  font-size: 14px; font-weight: 600; letter-spacing: 0.01em;
+  padding: 0 40px; height: 52px; border-radius: 999px; cursor: pointer;
+  box-shadow: 0 0 40px rgba(245,158,11,0.35), 0 4px 16px rgba(0,0,0,0.4);
+  transition: background 0.15s, box-shadow 0.15s,
               transform 0.08s cubic-bezier(0.34, 1.56, 0.64, 1);
   opacity: 0; animation: splashUp 0.6s ease 0.65s forwards;
 }
 .splash-btn:hover {
-  background: rgba(245,158,11,0.22); border-color: rgba(245,158,11,0.80);
-  box-shadow: 0 0 40px rgba(245,158,11,0.25), 0 0 0 1px rgba(245,158,11,0.15);
+  background: #FCD34D;
+  box-shadow: 0 0 60px rgba(245,158,11,0.55), 0 6px 24px rgba(0,0,0,0.4);
 }
 .splash-btn:active { transform: scale(0.96); }
 .splash-btn svg { transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .splash-btn:hover svg { transform: translateX(4px); }
 .splash-line {
-  width: 1px; height: 40px;
-  background: linear-gradient(to bottom, transparent, rgba(245,158,11,0.35), transparent);
-  margin: 36px 0 20px;
+  width: 1px; height: 44px;
+  background: linear-gradient(to bottom, transparent, rgba(245,158,11,0.4), transparent);
+  margin: 40px 0 22px;
   opacity: 0; animation: splashUp 0.5s ease 0.8s forwards;
 }
 .splash-footer {
   font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
-  letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim);
+  letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.2);
   opacity: 0; animation: splashUp 0.5s ease 0.85s forwards;
 }
-.splash-footer span { color: rgba(245,158,11,0.5); }
+.splash-footer span { color: rgba(245,158,11,0.6); }
 
 /* — Toast — */
 #toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
@@ -579,6 +591,7 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
   <div class="splash-time" id="splash-time"></div>
   <div class="splash-blob-1"></div>
   <div class="splash-blob-2"></div>
+  <div class="splash-blob-3"></div>
   <div class="splash-grid"></div>
   <div class="splash-content">
     <img src="ccs-logo.svg" alt="CCS International" class="splash-logo-img"/>
@@ -916,7 +929,7 @@ function dismissSplash() {
     let pos = 0;
 
     function render(text) {
-      heading.childNodes.forEach(function(n) { if (n !== cursor) n.remove(); });
+      Array.from(heading.childNodes).forEach(function(n) { if (n !== cursor) n.remove(); });
       const normal = text.slice(0, Math.min(text.length, normalText.length));
       const italic = text.length > normalText.length ? text.slice(normalText.length) : '';
       if (normal) heading.insertBefore(document.createTextNode(normal), cursor);
