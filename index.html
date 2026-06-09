@@ -534,61 +534,14 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
   border-top: 1px solid rgba(245,158,11,0.22);
   box-shadow: 0 1px 0 var(--border);
 }
-.stat-card {
-  border-top: 2px solid rgba(245,158,11,0.18);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
-  cursor: default;
-}
-.stat-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 28px rgba(0,0,0,0.3), 0 0 0 1px rgba(245,158,11,0.08);
-}
+.stat-card { border-top: 2px solid rgba(245,158,11,0.18); }
 .stat-value { font-size: 34px !important; }
-.card { transition: border-color 0.2s ease, box-shadow 0.2s ease; }
-.card:hover { border-color: var(--border-mid); box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
-@keyframes shimmer {
-  0%   { background-position: 200% center; }
-  100% { background-position: -200% center; }
-}
-.progress-fill {
-  background: linear-gradient(90deg, var(--accent), var(--accent-hi), var(--accent)) !important;
-  background-size: 200% 100% !important;
-  animation: shimmer 2s linear infinite;
-}
-@keyframes scanSweep {
-  0%   { transform: translateY(0); opacity: 0; }
-  4%   { opacity: 1; }
-  94%  { opacity: 0.65; }
-  100% { transform: translateY(100vh); opacity: 0; }
-}
-.splash-scan {
-  position: absolute; left: 0; right: 0; height: 1px; top: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(245,158,11,0.85) 50%, transparent 100%);
-  animation: scanSweep 2.2s cubic-bezier(0.4,0,0.6,1) 0.15s both;
-  pointer-events: none; z-index: 10;
-}
-.splash-time {
-  position: absolute; top: 28px; right: 32px;
-  font-family: 'Geist Mono', monospace; font-size: 10.5px; font-weight: 400;
-  letter-spacing: 0.12em; color: rgba(255,255,255,0.22);
-  opacity: 0; animation: splashUp 0.5s ease 1.3s forwards;
-  pointer-events: none;
-}
-.splash-cursor {
-  display: inline-block; width: 3px; height: 0.78em; vertical-align: middle;
-  background: var(--accent); border-radius: 2px; margin-left: 4px;
-  animation: splashBlink 0.75s step-end infinite;
-  transition: opacity 0.5s;
-}
-.splash-content { transition: transform 0.12s ease-out; }
 </style>
 </head>
 <body>
 
 <!-- Splash Screen -->
 <div id="splash" class="splash">
-  <div class="splash-scan"></div>
-  <div class="splash-time" id="splash-time"></div>
   <div class="splash-blob-1"></div>
   <div class="splash-blob-2"></div>
   <div class="splash-blob-3"></div>
@@ -596,7 +549,7 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
   <div class="splash-content">
     <img src="ccs-logo.svg" alt="CCS International" class="splash-logo-img"/>
     <div class="splash-badge">Internal Tools</div>
-    <h1 class="splash-heading"><span class="splash-cursor"></span></h1>
+    <h1 class="splash-heading">Hi, <em>Dave.</em></h1>
     <p class="splash-sub">Your tools are ready. Let's get to work.</p>
     <button class="splash-btn" onclick="dismissSplash()">
       Get Started
@@ -893,117 +846,19 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 // — Splash ——————————————————————————————
 function dismissSplash() {
   const splash = document.getElementById('splash');
-  splash.style.transition = 'opacity 0.45s ease, filter 0.45s ease, transform 0.45s cubic-bezier(0.4,0,0.2,1)';
-  splash.style.opacity = '0';
-  splash.style.filter = 'blur(12px)';
-  splash.style.transform = 'scale(0.96)';
-  setTimeout(() => { splash.style.display = 'none'; }, 480);
+  splash.classList.add('exiting');
+  setTimeout(() => { splash.style.display = 'none'; }, 460);
 }
-
-// — Splash init ——————————————————————————
-(function() {
-  function pad2(n) { return String(n).padStart(2, '0'); }
-
-  function initClock() {
-    const el = document.getElementById('splash-time');
-    if (!el) return;
-    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    function update() {
-      const now = new Date();
-      const h = now.getHours(), m = now.getMinutes();
-      const ampm = h >= 12 ? 'PM' : 'AM';
-      el.textContent = days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate() + '  ·  ' + pad2(h % 12 || 12) + ':' + pad2(m) + ' ' + ampm;
-    }
-    update();
-    setInterval(update, 30000);
-  }
-
-  function initTypewriter() {
-    const heading = document.querySelector('.splash-heading');
-    if (!heading) return;
-    const cursor = heading.querySelector('.splash-cursor');
-    const normalText = 'Hi, ';
-    const italicText = 'Dave.';
-    const full = normalText + italicText;
-    let pos = 0;
-
-    function render(text) {
-      Array.from(heading.childNodes).forEach(function(n) { if (n !== cursor) n.remove(); });
-      const normal = text.slice(0, Math.min(text.length, normalText.length));
-      const italic = text.length > normalText.length ? text.slice(normalText.length) : '';
-      if (normal) heading.insertBefore(document.createTextNode(normal), cursor);
-      if (italic) {
-        const em = document.createElement('em');
-        em.textContent = italic;
-        heading.insertBefore(em, cursor);
-      }
-    }
-
-    function type() {
-      if (pos < full.length) {
-        render(full.slice(0, ++pos));
-        setTimeout(type, pos <= normalText.length ? 58 : 75);
-      } else {
-        setTimeout(function() {
-          if (cursor) { cursor.style.opacity = '0'; }
-        }, 950);
-      }
-    }
-
-    setTimeout(type, 1000);
-  }
-
-  function initParallax() {
-    const splash = document.getElementById('splash');
-    const content = document.querySelector('.splash-content');
-    if (!splash || !content) return;
-    splash.addEventListener('mousemove', function(e) {
-      const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
-      const dx = (e.clientX - cx) / cx, dy = (e.clientY - cy) / cy;
-      content.style.transform = 'perspective(1100px) rotateX(' + (dy * -2.5) + 'deg) rotateY(' + (dx * 2.5) + 'deg)';
-    });
-    splash.addEventListener('mouseleave', function() {
-      content.style.transform = '';
-    });
-  }
-
-  initClock();
-  initTypewriter();
-  initParallax();
-})();
 
 // — Shared ——————————————————————————————
 function switchTab(id) {
-  const current = document.querySelector('.tab-panel.active');
-  if (current) {
-    current.style.transition = 'opacity 0.13s ease, transform 0.13s ease';
-    current.style.opacity = '0';
-    current.style.transform = 'translateY(5px)';
-  }
-  setTimeout(function() {
-    document.querySelectorAll('.tab-panel').forEach(function(p) {
-      p.classList.remove('active');
-      p.style.transition = p.style.opacity = p.style.transform = '';
-    });
-    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
-    const panel = document.getElementById('tab-' + id);
-    panel.classList.add('active');
-    panel.style.opacity = '0';
-    panel.style.transform = 'translateY(8px)';
-    requestAnimationFrame(function() {
-      requestAnimationFrame(function() {
-        panel.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
-        panel.style.opacity = '1';
-        panel.style.transform = 'translateY(0)';
-        setTimeout(function() { panel.style.transition = panel.style.opacity = panel.style.transform = ''; }, 280);
-      });
-    });
-    document.querySelectorAll('.tab-btn').forEach(function(b) {
-      if (b.dataset.tab === id) b.classList.add('active');
-    });
-    window.scrollTo(0, 0);
-  }, 140);
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    if (b.dataset.tab === id) b.classList.add('active');
+  });
+  window.scrollTo(0, 0);
 }
 function showToast(msg) {
   const t = document.getElementById('toast');
