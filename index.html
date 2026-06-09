@@ -536,6 +536,115 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 }
 .stat-card { border-top: 2px solid rgba(245,158,11,0.18); }
 .stat-value { font-size: 34px !important; }
+
+/* ── ROI Stats button ── */
+.roi-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 999px;
+  background: rgba(74,222,128,0.08);
+  border: 1px solid rgba(74,222,128,0.28);
+  color: #4ADE80;
+  font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.roi-btn:hover { background: rgba(74,222,128,0.14); border-color: rgba(74,222,128,0.50); box-shadow: 0 0 16px rgba(74,222,128,0.12); }
+.roi-btn-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ADE80; box-shadow: 0 0 6px rgba(74,222,128,0.7); }
+
+/* ── ROI Modal ── */
+.roi-backdrop {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(7,11,20,0.88); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.roi-backdrop.open { opacity: 1; pointer-events: all; }
+.roi-modal {
+  width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto;
+  background: linear-gradient(180deg, #0F1623, #0A0F1A);
+  border: 1px solid rgba(74,222,128,0.18);
+  border-radius: 20px; padding: 32px;
+  box-shadow: 0 0 60px rgba(74,222,128,0.07), 0 24px 60px rgba(0,0,0,0.6);
+  transform: translateY(12px); transition: transform 0.2s;
+}
+.roi-backdrop.open .roi-modal { transform: translateY(0); }
+.roi-modal-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 28px;
+}
+.roi-modal-eyebrow {
+  font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.18em; text-transform: uppercase; color: #4ADE80; margin-bottom: 6px;
+}
+.roi-modal-title {
+  font-family: 'Fraunces', serif; font-variation-settings: 'opsz' 96;
+  font-size: 28px; font-weight: 400; letter-spacing: -0.025em; color: var(--text); line-height: 1.1;
+}
+.roi-modal-title em { font-style: italic; color: #4ADE80; }
+.roi-close {
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border-mid);
+  border-radius: 8px; color: var(--text-dim); font-size: 18px; line-height: 1;
+  padding: 6px 10px; cursor: pointer; transition: all 0.15s; flex-shrink: 0; margin-top: 2px;
+}
+.roi-close:hover { background: rgba(255,255,255,0.09); color: var(--text); }
+
+/* Big summary numbers */
+.roi-summary {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 28px;
+}
+.roi-summary-card {
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px;
+  padding: 18px 14px; text-align: center;
+}
+.roi-summary-card.highlight { background: rgba(74,222,128,0.07); border-color: rgba(74,222,128,0.22); }
+.roi-summary-val {
+  font-family: 'Fraunces', serif; font-variation-settings: 'opsz' 36;
+  font-size: 32px; font-weight: 400; letter-spacing: -0.02em; color: var(--accent); line-height: 1;
+}
+.roi-summary-card.highlight .roi-summary-val { color: #4ADE80; }
+.roi-summary-lbl {
+  font-family: 'Geist Mono', monospace; font-size: 9.5px; font-weight: 500;
+  letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-dim); margin-top: 6px;
+}
+
+/* Per-tool rows */
+.roi-section-label {
+  font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px;
+}
+.roi-tools { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+.roi-tool-row {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px 18px; display: grid; grid-template-columns: 1fr auto auto auto;
+  align-items: center; gap: 12px;
+}
+.roi-tool-name { font-size: 14px; font-weight: 500; color: var(--text); }
+.roi-tool-uses { display: flex; align-items: center; gap: 5px; }
+.roi-use-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); opacity: 0.75; }
+.roi-use-dot.extra { opacity: 0.25; }
+.roi-tool-hrs { font-family: 'Geist Mono', monospace; font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+.roi-tool-val { font-family: 'Geist Mono', monospace; font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; }
+.roi-tool-use-count { font-family: 'Geist Mono', monospace; font-size: 11px; color: var(--text-dim); margin-left: 3px; }
+
+/* Monthly projection */
+.roi-projection {
+  background: rgba(74,222,128,0.06); border: 1px solid rgba(74,222,128,0.16);
+  border-radius: 12px; padding: 18px 20px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  margin-bottom: 20px;
+}
+.roi-projection-left {}
+.roi-projection-label { font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(74,222,128,0.6); margin-bottom: 4px; }
+.roi-projection-note { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+.roi-projection-val { font-family: 'Fraunces', serif; font-variation-settings: 'opsz' 36; font-size: 36px; font-weight: 400; color: #4ADE80; letter-spacing: -0.02em; white-space: nowrap; }
+
+/* Footer note */
+.roi-projection-unit { font-size: 16px; opacity: 0.5; }
+.roi-footer-note {
+  font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-dim);
+  letter-spacing: 0.08em; text-align: center; margin-top: 8px;
+}
+.nav-right-group { display: flex; align-items: center; gap: 12px; }
 </style>
 </head>
 <body>
@@ -574,7 +683,12 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
     <button class="tab-btn" data-tab="gl" onclick="switchTab('gl')">Transaction Parser</button>
     <button class="tab-btn" data-tab="revenue" onclick="switchTab('revenue')">Revenue Parser</button>
   </div>
-  <div class="nav-right">Built by <span>RoleMade</span></div>
+  <div class="nav-right-group">
+    <button class="roi-btn" onclick="openROI()">
+      <span class="roi-btn-dot"></span>ROI Stats
+    </button>
+    <div class="nav-right">Built by <span>RoleMade</span></div>
+  </div>
 </nav>
 
 <!-- ─────────────────────────────────────── -->
@@ -838,6 +952,47 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
     <div class="footer-brand">Built by <span>RoleMade</span></div>
   </div>
 </div>
+</div>
+
+<!-- ── ROI Stats Modal ── -->
+<div id="roi-backdrop" class="roi-backdrop" onclick="closeROIBackdrop(event)">
+  <div class="roi-modal">
+    <div class="roi-modal-header">
+      <div>
+        <div class="roi-modal-eyebrow">Value Delivered</div>
+        <h2 class="roi-modal-title">ROI <em>Summary</em></h2>
+      </div>
+      <button class="roi-close" onclick="closeROI()">✕</button>
+    </div>
+
+    <div class="roi-summary">
+      <div class="roi-summary-card">
+        <div class="roi-summary-val" id="roi-total-uses">8</div>
+        <div class="roi-summary-lbl">Total Uses</div>
+      </div>
+      <div class="roi-summary-card">
+        <div class="roi-summary-val" id="roi-total-hrs">20h</div>
+        <div class="roi-summary-lbl">Hours Saved</div>
+      </div>
+      <div class="roi-summary-card highlight">
+        <div class="roi-summary-val" id="roi-total-val">$2,400</div>
+        <div class="roi-summary-lbl">Value at $120/hr</div>
+      </div>
+    </div>
+
+    <div class="roi-section-label">Per Tool Breakdown</div>
+    <div class="roi-tools" id="roi-tools-list"></div>
+
+    <div class="roi-projection">
+      <div class="roi-projection-left">
+        <div class="roi-projection-label">Monthly Run Rate</div>
+        <div class="roi-projection-note">Once all three tools in rotation<br>2× PTO · 1× each parser · $120/hr</div>
+      </div>
+      <div class="roi-projection-val">$1,200<span class="roi-projection-unit">/mo</span></div>
+    </div>
+
+    <div class="roi-footer-note">Rate: $120/hr assumed · Updated manually · Built by RoleMade</div>
+  </div>
 </div>
 
 <div id="toast"></div>
@@ -1720,6 +1875,62 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
     XLSX.writeFile(wb, `CCS-Revenue-Summary-${slug}.xlsx`);
     showToast('Excel downloaded');
   };
+})();
+
+// ── ROI Stats Modal ──────────────────────────────
+(function() {
+  // UPDATE THESE MANUALLY each month
+  const ROI = {
+    rate: 120,
+    tools: [
+      { name: 'PTO Extractor',      uses: 6, hrsPerUse: 2.5 },
+      { name: 'Transaction Parser', uses: 1, hrsPerUse: 2.5 },
+      { name: 'Revenue Parser',     uses: 1, hrsPerUse: 2.5 },
+    ],
+  };
+
+  function renderROI() {
+    const totalUses = ROI.tools.reduce((s, t) => s + t.uses, 0);
+    const totalHrs  = ROI.tools.reduce((s, t) => s + t.uses * t.hrsPerUse, 0);
+    const totalVal  = totalHrs * ROI.rate;
+
+    document.getElementById('roi-total-uses').textContent = totalUses;
+    document.getElementById('roi-total-hrs').textContent  = totalHrs + 'h';
+    document.getElementById('roi-total-val').textContent  = '$' + totalVal.toLocaleString('en-US');
+
+    const maxUses = Math.max(...ROI.tools.map(t => t.uses), 1);
+    const DOT_MAX = 8;
+
+    document.getElementById('roi-tools-list').innerHTML = ROI.tools.map(tool => {
+      const hrs = tool.uses * tool.hrsPerUse;
+      const val = hrs * ROI.rate;
+      const filled  = Math.min(tool.uses, DOT_MAX);
+      const empty   = Math.max(0, Math.min(maxUses, DOT_MAX) - filled);
+      const dots = Array(filled).fill('<span class="roi-use-dot"></span>').join('')
+                 + Array(empty).fill('<span class="roi-use-dot extra"></span>').join('');
+      return `
+        <div class="roi-tool-row">
+          <div class="roi-tool-name">${tool.name}</div>
+          <div class="roi-tool-uses">${dots}<span class="roi-tool-use-count">${tool.uses}×</span></div>
+          <div class="roi-tool-hrs">${hrs}h saved</div>
+          <div class="roi-tool-val">$${val.toLocaleString('en-US')}</div>
+        </div>`;
+    }).join('');
+  }
+
+  window.openROI = function() {
+    renderROI();
+    document.getElementById('roi-backdrop').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+  window.closeROI = function() {
+    document.getElementById('roi-backdrop').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+  window.closeROIBackdrop = function(e) {
+    if (e.target === document.getElementById('roi-backdrop')) closeROI();
+  };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeROI(); });
 })();
 </script>
 </body>
