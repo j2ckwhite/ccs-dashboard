@@ -346,7 +346,7 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 .rev-stat-pill.warn { border-color: rgba(248,113,113,0.3); color: var(--red); }
 .rev-stat-pill.warn b { color: var(--red); }
 
-.rev-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+.rev-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow-x: auto; margin-bottom: 20px; }
 .rev-section-hdr {
   padding: 9px 16px;
   font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
@@ -355,8 +355,8 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 .rev-section-hdr.in { background: rgba(74,222,128,0.07); color: rgba(74,222,128,0.8); border-bottom: 1px solid rgba(74,222,128,0.12); }
 .rev-section-hdr.out { background: rgba(245,158,11,0.07); color: var(--accent); border-top: 1px solid var(--border); border-bottom: 1px solid rgba(245,158,11,0.12); }
 
-.rev-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.rev-table thead th {
+.rev-table { width: auto; min-width: 100%; border-collapse: collapse; font-size: 13px; }
+.rev-table thead th { white-space: nowrap;
   background: var(--surface-2); color: var(--text-muted);
   font-family: 'Geist Mono', monospace; font-weight: 500; font-size: 10px;
   letter-spacing: 0.13em; text-transform: uppercase;
