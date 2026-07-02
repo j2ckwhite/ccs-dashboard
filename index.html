@@ -1254,8 +1254,19 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
     }
     if (mode === 'summary' || mode === 'both') {
       const agg = buildAggData();
-      const data = agg.map(r => ({ 'Name': r.name, 'Cost Code': r.costCode, 'Total Hours': fmtH(r.hours) }));
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data, { header: ['Name','Cost Code','Total Hours'] }), 'Summary by Employee');
+      // Roster range for the VLOOKUP enrichment columns (David's SharePoint EE Roster). Same every export.
+      const ROSTER = "'https://consertus-my.sharepoint.com/personal/david_white_consertus_com/Documents/DAW CCS/ADMIN/PAYROLL/[EE Roster.xlsx]Sheet3'!$A$2:$C$50";
+      const aoa = [['Name','Cost Code','Full Name','Employee Number','Type','Total Hours']];
+      agg.forEach(r => aoa.push([r.name, r.costCode, null, null, null, fmtH(r.hours)]));
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      // Inject the three live formulas per data row (row 2 = first employee).
+      agg.forEach((r, i) => {
+        const row = i + 2;
+        ws['C' + row] = { t: 's', f: `VLOOKUP(A${row},${ROSTER},3,FALSE)` };
+        ws['D' + row] = { t: 's', f: `VLOOKUP(A${row},${ROSTER},2,FALSE)` };
+        ws['E' + row] = { t: 's', f: `+IF(COUNTIF(B${row},"**HOLIDAY**"),"Holiday",IF(COUNTIF(B${row},"*PTO*"),"PTO","Vacation"))` };
+      });
+      XLSX.utils.book_append_sheet(wb, ws, 'Summary by Employee');
     }
     const label = mode === 'detail' ? 'Detail' : mode === 'summary' ? 'Summary' : 'Full';
     XLSX.writeFile(wb, `PTO_Extract_${label}_${todayStr()}.xlsx`);
