@@ -239,6 +239,31 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 .file-chip .remove { cursor: pointer; color: var(--accent); font-size: 14px; line-height: 1;
   opacity: 0.6; transition: opacity 0.15s; background: none; border: none; padding: 0; }
 .file-chip .remove:hover { opacity: 1; }
+
+/* — Job Hours tool — */
+.job-input-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.job-input-row input { flex: 1; min-width: 200px; background: var(--surface-2);
+  border: 1px solid var(--border-mid); border-radius: 10px; padding: 11px 14px;
+  color: var(--text); font-size: 14px; font-family: 'Geist Mono', monospace; letter-spacing: 0.04em; }
+.job-input-row input:focus { outline: none; border-color: var(--accent); background: var(--accent-soft); }
+#jobs-jobchips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+#jobs-filechips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.job-num-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-soft);
+  color: var(--accent); border: 1px solid var(--accent-mid); border-radius: 999px;
+  padding: 5px 12px; font-size: 12px; font-weight: 600; font-family: 'Geist Mono', monospace; letter-spacing: 0.04em; }
+.job-num-chip button { background: none; border: none; cursor: pointer; color: var(--accent);
+  font-size: 14px; line-height: 1; padding: 0; opacity: 0.7; }
+.job-num-chip button:hover { opacity: 1; }
+.job-group { margin-bottom: 22px; }
+.job-group-head { display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px; padding: 0 2px 12px; flex-wrap: wrap; }
+.job-group-title { font-family: 'Fraunces', serif; font-variation-settings: 'opsz' 30;
+  font-size: 20px; font-weight: 400; color: var(--text); letter-spacing: -0.01em; }
+.job-group-title span { color: var(--accent); }
+.job-group-name { font-size: 12.5px; color: var(--text-dim); margin-top: 3px; }
+.job-group-total { font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent);
+  background: var(--accent-soft); border: 1px solid var(--accent-mid); border-radius: 999px; padding: 5px 12px; white-space: nowrap; }
 .file-chip .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
 .file-chip .status-dot.done { background: var(--green); }
 .gl-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
@@ -683,6 +708,7 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
     <button class="tab-btn active" data-tab="pto" onclick="switchTab('pto')">PTO Extractor</button>
     <button class="tab-btn" data-tab="gl" onclick="switchTab('gl')">Transaction Parser</button>
     <button class="tab-btn" data-tab="revenue" onclick="switchTab('revenue')">Revenue Parser</button>
+    <button class="tab-btn" data-tab="jobs" onclick="switchTab('jobs')">Job Hours</button>
   </div>
   <div class="nav-right-group">
     <button class="roi-btn" onclick="openROI()">
@@ -947,6 +973,97 @@ tbody td input:focus { outline: none; border-color: var(--accent-mid); backgroun
 
     <div class="rev-table-wrap" id="rev-table-wrap"></div>
 
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">Built by <span>RoleMade</span></div>
+  </div>
+</div>
+</div>
+
+<!-- ─────────────────────────────────────── -->
+<!--  TAB 4 — JOB HOURS                      -->
+<!-- ─────────────────────────────────────── -->
+<div id="tab-jobs" class="tab-panel">
+<div class="app">
+  <div class="header">
+    <div class="header-left">
+      <div class="eyebrow">Timesheets</div>
+      <h1>Job Hours <em>by Project</em></h1>
+    </div>
+  </div>
+  <div class="divider"></div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Job Numbers</div>
+    </div>
+    <div class="job-input-row">
+      <input type="text" id="jobs-job-input" placeholder="Enter a Job # and press Enter (e.g. 125215)" autocomplete="off"/>
+      <button class="btn btn-primary" onclick="jobsAddNumber()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Job #
+      </button>
+    </div>
+    <div id="jobs-jobchips"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Upload Timesheets</div>
+    </div>
+    <div id="jobs-drop-zone" class="drop-zone">
+      <div class="dz-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V3m0 0L8 7m4-4l4 4"/>
+        </svg>
+      </div>
+      <p class="dz-title"><strong>Click to browse</strong> or drag &amp; drop</p>
+      <p class="dz-hint">.xlsx · .xlsm · Multiple files</p>
+    </div>
+    <input type="file" id="jobs-file-input" accept=".xlsx,.xlsm" multiple style="display:none"/>
+    <div id="jobs-filechips"></div>
+    <div class="action-row">
+      <button class="btn btn-primary" id="jobs-extract-btn" disabled onclick="jobsExtractAll()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        Pull Hours
+      </button>
+      <button class="btn btn-ghost" onclick="jobsClearAll()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Clear All
+      </button>
+    </div>
+  </div>
+
+  <div id="jobs-errors"></div>
+
+  <div class="card" id="jobs-stats-card" style="display:none">
+    <div class="card-header"><div class="card-title">Results</div></div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-value" id="jobs-stat-jobs">0</div><div class="stat-label">Jobs Matched</div></div>
+      <div class="stat-card"><div class="stat-value" id="jobs-stat-people">0</div><div class="stat-label">People</div></div>
+      <div class="stat-card"><div class="stat-value" id="jobs-stat-hours">0</div><div class="stat-label">Total Hours</div></div>
+      <div class="stat-card"><div class="stat-value" id="jobs-stat-files">0</div><div class="stat-label">Files Processed</div></div>
+    </div>
+  </div>
+
+  <div class="card" id="jobs-results-card" style="display:none">
+    <div class="card-header"><div class="card-title">Hours by Job</div></div>
+    <div id="jobs-groups"></div>
+    <div id="jobs-empty-state" class="pto-empty" style="display:none">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <p>No hours found for the job numbers entered.</p>
+    </div>
+  </div>
+
+  <div class="card" id="jobs-download-card" style="display:none">
+    <div class="card-header"><div class="card-title">Export</div></div>
+    <div class="download-group">
+      <button class="btn btn-success" onclick="jobsDownload()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download Excel
+      </button>
+    </div>
   </div>
 
   <div class="footer">
@@ -1950,6 +2067,248 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
     if (e.target === document.getElementById('roi-backdrop')) closeROI();
   };
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeROI(); });
+})();
+
+// ——————————————————————————————————————————
+//  JOB HOURS  (hours per person, grouped by job #)
+// ——————————————————————————————————————————
+(function() {
+  const uploadedFiles = new Map();
+  let jobNumbers = [];      // entered job #s (normalized, order preserved)
+  let groups = [];          // [{ job, jobName, people:[{name,hours}], total }]
+  let filesProcessed = 0;
+
+  const normJob = v => ptoStr(v).trim();
+  const keyJob  = v => normJob(v).toLowerCase();
+  const fmtHours = h => h % 1 === 0 ? h : parseFloat(h.toFixed(2));
+
+  // — Job # input —
+  const jobInput = document.getElementById('jobs-job-input');
+  jobInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); jobsAddNumber(); } });
+  window.jobsAddNumber = function() {
+    const raw = jobInput.value;
+    // allow comma / whitespace separated bulk entry
+    raw.split(/[\s,]+/).map(s => s.trim()).filter(Boolean).forEach(n => {
+      if (!jobNumbers.some(j => j.toLowerCase() === n.toLowerCase())) jobNumbers.push(n);
+    });
+    jobInput.value = '';
+    renderJobChips();
+    jobInput.focus();
+  };
+  window.jobsRemoveNumber = function(n) { jobNumbers = jobNumbers.filter(j => j !== n); renderJobChips(); };
+  function renderJobChips() {
+    const c = document.getElementById('jobs-jobchips');
+    c.innerHTML = '';
+    for (const n of jobNumbers) {
+      const chip = document.createElement('span');
+      chip.className = 'job-num-chip';
+      chip.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${esc(n)}<button title="Remove" onclick="jobsRemoveNumber('${esc(n).replace(/'/g,"\\'")}')">×</button>`;
+      c.appendChild(chip);
+    }
+    updateReady();
+  }
+
+  // — File upload (mirrors PTO drop zone) —
+  const dz = document.getElementById('jobs-drop-zone');
+  dz.addEventListener('click', () => document.getElementById('jobs-file-input').click());
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
+  document.getElementById('jobs-file-input').addEventListener('change', e => { handleFiles(e.target.files); e.target.value = ''; });
+
+  function handleFiles(fileList) {
+    let added = false;
+    for (const f of fileList) { if (!uploadedFiles.has(f.name)) { uploadedFiles.set(f.name, f); added = true; } }
+    if (added) renderFileChips();
+  }
+  function renderFileChips() {
+    const c = document.getElementById('jobs-filechips');
+    c.innerHTML = '';
+    for (const name of uploadedFiles.keys()) {
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.innerHTML = `<svg class="chip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>${esc(name)}<button title="Remove" onclick="jobsRemoveFile('${esc(name).replace(/'/g,"\\'")}')">×</button>`;
+      c.appendChild(chip);
+    }
+    updateReady();
+  }
+  window.jobsRemoveFile = function(name) { uploadedFiles.delete(name); renderFileChips(); };
+
+  function updateReady() {
+    document.getElementById('jobs-extract-btn').disabled = uploadedFiles.size === 0 || jobNumbers.length === 0;
+  }
+
+  window.jobsClearAll = function() {
+    uploadedFiles.clear(); jobNumbers = []; groups = []; filesProcessed = 0;
+    renderJobChips(); renderFileChips();
+    document.getElementById('jobs-errors').innerHTML = '';
+    ['jobs-stats-card','jobs-results-card','jobs-download-card'].forEach(id => document.getElementById(id).style.display = 'none');
+  };
+
+  window.jobsExtractAll = async function() {
+    document.getElementById('jobs-errors').innerHTML = '';
+    filesProcessed = 0;
+    const entries = [];       // {job, jobName, name, hours}
+    const errs = [];
+    for (const [fname, file] of uploadedFiles.entries()) {
+      try { const ex = await parseFile(file); entries.push(...ex); filesProcessed++; }
+      catch (e) { errs.push({ fname, msg: e.message || String(e) }); }
+    }
+    const errBox = document.getElementById('jobs-errors');
+    errBox.innerHTML = '';
+    for (const { fname, msg } of errs) {
+      errBox.innerHTML += `<div class="error-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span><strong>${esc(fname)}:</strong> ${esc(msg)}</span></div>`;
+    }
+
+    // Aggregate (job, person) -> hours, filtered to entered job #s. Preserve entered order.
+    const wanted = new Set(jobNumbers.map(j => j.toLowerCase()));
+    const perJob = new Map();   // jobKey -> { job, jobName, people: Map(name->hours) }
+    for (const e of entries) {
+      const jk = keyJob(e.job);
+      if (!wanted.has(jk)) continue;
+      if (!perJob.has(jk)) perJob.set(jk, { job: e.job, jobName: '', people: new Map() });
+      const g = perJob.get(jk);
+      if (!g.jobName && e.jobName) g.jobName = e.jobName;
+      g.people.set(e.name, (g.people.get(e.name) || 0) + e.hours);
+    }
+    groups = jobNumbers.map(j => perJob.get(j.toLowerCase())).filter(Boolean).map(g => {
+      const people = [...g.people.entries()].map(([name, hours]) => ({ name, hours: fmtHours(hours) }))
+        .sort((a, b) => b.hours - a.hours || a.name.localeCompare(b.name));
+      return { job: g.job, jobName: g.jobName, people, total: fmtHours(people.reduce((s, p) => s + p.hours, 0)) };
+    });
+
+    renderGroups();
+    updateStats();
+    ['jobs-stats-card','jobs-results-card','jobs-download-card'].forEach(id => document.getElementById(id).style.display = 'block');
+  };
+
+  function parseFile(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('FileReader error'));
+      reader.onload = e => {
+        try {
+          const buf = new Uint8Array(e.target.result);
+          const wb = XLSX.read(buf, { type: 'array', raw: true });
+          const sheetName = wb.SheetNames.find(n => n.trim().toLowerCase() === 'timesheet') || wb.SheetNames[0];
+          const ws = wb.Sheets[sheetName];
+          if (!ws) throw new Error('No readable sheet found');
+          const raw = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null });
+
+          // Employee name (same approach as PTO extractor)
+          let empName = null;
+          for (let r = 0; r < Math.min(40, raw.length) && !empName; r++) {
+            const row = raw[r];
+            for (let c = 0; c < row.length; c++) {
+              if (/employee\s*name/i.test(ptoStr(row[c]))) {
+                for (let cc = c + 1; cc < row.length; cc++) {
+                  const v = ptoStr(row[cc]).trim();
+                  if (v && !v.startsWith('=') && !/^ur\s*name$/i.test(v)) { empName = v; break; }
+                }
+                break;
+              }
+            }
+          }
+          if (!empName) {
+            for (let r = 0; r < Math.min(40, raw.length) && !empName; r++)
+              for (const cell of raw[r]) { const v = ptoStr(cell).trim(); if (/^[A-Za-z\-']+,\s*[A-Za-z\-'.\s]+$/.test(v)) { empName = v; break; } }
+          }
+          if (!empName) empName = 'Unknown';
+
+          // Header row: needs a "Job #" column and a "Hours" column
+          let headerRowIdx = -1, colJob = -1, colHours = -1, colJobName = -1;
+          for (let r = 0; r < Math.min(40, raw.length); r++) {
+            const row = raw[r]; let cj = -1, ch = -1, cn = -1;
+            for (let c = 0; c < row.length; c++) {
+              const v = ptoStr(row[c]).toLowerCase().trim();
+              if (/job\s*#/.test(v) || v === 'job number' || v === 'job no') cj = c;
+              else if (v.includes('job') && (v.includes('name') || v.includes('description'))) cn = c;
+              if (v === 'hours' || (v.includes('hours') && !v.includes('job') && !v.includes('dept'))) ch = c;
+            }
+            if (cj !== -1 && ch !== -1) { headerRowIdx = r; colJob = cj; colHours = ch; colJobName = cn; break; }
+          }
+          if (headerRowIdx === -1) throw new Error('Could not locate a header row with "Job #" and "Hours"');
+
+          const out = []; let blankStreak = 0;
+          for (let r = headerRowIdx + 1; r < raw.length; r++) {
+            const row = raw[r];
+            let stop = false;
+            for (const cell of row) { if (/^total\s*hours$/i.test(ptoStr(cell).trim()) || /^totals?$/i.test(ptoStr(cell).trim())) { stop = true; break; } }
+            if (stop) break;
+            const jobStr = normJob(row[colJob]);
+            const hoursStr = ptoStr(row[colHours]).trim();
+            const jobName = colJobName >= 0 ? ptoStr(row[colJobName]).trim() : '';
+            if (!jobStr && !hoursStr) { blankStreak++; if (blankStreak >= 3) break; continue; }
+            blankStreak = 0;
+            if (!jobStr || jobStr.startsWith('=')) continue;
+            const hours = parseFloat(hoursStr);
+            if (!hoursStr || isNaN(hours) || hours === 0) continue;
+            out.push({ job: jobStr, jobName: (jobName && jobName !== '-') ? jobName : '', name: empName, hours });
+          }
+          resolve(out);
+        } catch (err) { reject(err); }
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  function renderGroups() {
+    const container = document.getElementById('jobs-groups');
+    const empty = document.getElementById('jobs-empty-state');
+    container.innerHTML = '';
+    if (!groups.length) { empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    for (const g of groups) {
+      const rowsHtml = g.people.map(p => `<tr><td class="name-cell">${esc(p.name)}</td><td class="hours-cell">${p.hours}</td></tr>`).join('');
+      const div = document.createElement('div');
+      div.className = 'job-group';
+      div.innerHTML = `
+        <div class="job-group-head">
+          <div>
+            <div class="job-group-title">Job # <span>${esc(g.job)}</span></div>
+            ${g.jobName ? `<div class="job-group-name">${esc(g.jobName)}</div>` : ''}
+          </div>
+          <div class="job-group-total">${g.total} hrs total</div>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Employee</th><th style="text-align:right;width:120px">Hours</th></tr></thead>
+            <tbody>${rowsHtml}</tbody></table>
+        </div>`;
+      container.appendChild(div);
+    }
+  }
+
+  function updateStats() {
+    const people = new Set();
+    let totalHours = 0;
+    for (const g of groups) { g.people.forEach(p => people.add(p.name)); totalHours += g.total; }
+    document.getElementById('jobs-stat-jobs').textContent = groups.length;
+    document.getElementById('jobs-stat-people').textContent = people.size;
+    document.getElementById('jobs-stat-hours').textContent = fmtHours(totalHours);
+    document.getElementById('jobs-stat-files').textContent = filesProcessed;
+  }
+
+  window.jobsDownload = function() {
+    if (!groups.length) return;
+    const aoa = [['Job #', 'Job Name', 'Employee', 'Hours']];
+    for (const g of groups) {
+      g.people.forEach((p, i) => aoa.push([i === 0 ? g.job : '', i === 0 ? g.jobName : '', p.name, p.hours]));
+      aoa.push(['', '', 'Subtotal', g.total]);
+      aoa.push([]);
+    }
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = [{ wch: 14 }, { wch: 46 }, { wch: 26 }, { wch: 10 }];
+    // Number-format the Hours column
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    for (let r = 1; r <= range.e.r; r++) {
+      const cell = ws[XLSX.utils.encode_cell({ r, c: 3 })];
+      if (cell && typeof cell.v === 'number') { cell.t = 'n'; cell.z = '0.##'; }
+    }
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Hours by Job');
+    XLSX.writeFile(wb, `CCS Job Hours ${todayStr()}.xlsx`);
+    showToast('Excel downloaded');
+  };
 })();
 </script>
 </body>
