@@ -1551,7 +1551,9 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
       });
       XLSX.utils.book_append_sheet(wb, ws, res.label.slice(0,31));
     });
-    XLSX.writeFile(wb, `CCS-Budget-Input-${todayStr()}.xlsx`);
+    // Filename per David's naming: month(s) come from the uploaded file(s). "/" is illegal in filenames, so Bud/Act -> Bud-Act.
+    const months = [...new Set(glResults.map(r => r.label))].join(', ').replace(/[\/\\:*?"<>|]/g, '-').trim();
+    XLSX.writeFile(wb, `CCS Expense Summary Bud-Act Comparison ${months}.xlsx`);
     showToast('Downloaded');
   });
 })();
@@ -1887,8 +1889,9 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
     const ws = XLSX.utils.aoa_to_sheet(data);
     ws['!cols'] = [52,14,26,18,16,22,20,20].map(w=>({wch:w}));
     XLSX.utils.book_append_sheet(wb, ws, 'Revenue Summary');
-    const slug = monthLabel.replace(/[^a-zA-Z0-9]/g,'-').replace(/-+/g,'-');
-    XLSX.writeFile(wb, `CCS-Revenue-Summary-${slug}.xlsx`);
+    // Filename per David's naming: month/year comes from the uploaded Month Sheet. "/" is illegal in filenames, so Bud/Act -> Bud-Act.
+    const safeMonth = monthLabel.replace(/[\/\\:*?"<>|]/g, '-').trim();
+    XLSX.writeFile(wb, `CCS Revenue Bud-Act Comparison ${safeMonth}.xlsx`);
     showToast('Excel downloaded');
   };
 })();
