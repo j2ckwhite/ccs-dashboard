@@ -1372,7 +1372,7 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
     if (mode === 'summary' || mode === 'both') {
       const agg = buildAggData();
       // Roster range for the VLOOKUP enrichment columns (David's SharePoint EE Roster). Same every export.
-      const ROSTER = "'https://consertus-my.sharepoint.com/personal/david_white_consertus_com/Documents/DAW CCS/ADMIN/PAYROLL/[EE Roster.xlsx]Sheet3'!$A$2:$C$50";
+      const ROSTER = "'https://consertus-my.sharepoint.com/personal/david_white_consertus_com/Documents/DAW CCS/ADMIN/PAYROLL/[EE Roster.xlsx]Sheet3'!$A$2:$C$60";
       const aoa = [['Name','Cost Code','Full Name','Employee Number','Type','Total Hours']];
       agg.forEach(r => aoa.push([r.name, r.costCode, null, null, null, fmtH(r.hours)]));
       const ws = XLSX.utils.aoa_to_sheet(aoa);
