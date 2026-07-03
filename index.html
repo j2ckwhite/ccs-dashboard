@@ -2075,12 +2075,20 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
 (function() {
   const uploadedFiles = new Map();
   let jobNumbers = [];      // entered job #s (normalized, order preserved)
-  let groups = [];          // [{ job, jobName, people:[{name,hours}], total }]
+  let groups = [];          // [{ job, jobName, entries:[{date,dateSort,name,hours}], total }]
   let filesProcessed = 0;
 
   const normJob = v => ptoStr(v).trim();
   const keyJob  = v => normJob(v).toLowerCase();
   const fmtHours = h => h % 1 === 0 ? h : parseFloat(h.toFixed(2));
+  function fmtDate(v) {
+    if (v === null || v === undefined) return '';
+    if (typeof v === 'number' && v > 1000) { try { const d = XLSX.SSF.parse_date_code(v); return `${d.m}/${d.d}/${d.y}`; } catch (e) { return String(v); } }
+    if (v instanceof Date) return `${v.getMonth()+1}/${v.getDate()}/${v.getFullYear()}`;
+    const s = ptoStr(v).trim();
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) { const [y, m, d] = s.substring(0, 10).split('-'); return `${+m}/${+d}/${y}`; }
+    return s;
+  }
 
   // — Job # input —
   const jobInput = document.getElementById('jobs-job-input');
@@ -2160,21 +2168,20 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
       errBox.innerHTML += `<div class="error-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span><strong>${esc(fname)}:</strong> ${esc(msg)}</span></div>`;
     }
 
-    // Aggregate (job, person) -> hours, filtered to entered job #s. Preserve entered order.
+    // Group individual dated entries by job #, filtered to entered job #s. Preserve entered order.
     const wanted = new Set(jobNumbers.map(j => j.toLowerCase()));
-    const perJob = new Map();   // jobKey -> { job, jobName, people: Map(name->hours) }
+    const perJob = new Map();   // jobKey -> { job, jobName, entries: [] }
     for (const e of entries) {
       const jk = keyJob(e.job);
       if (!wanted.has(jk)) continue;
-      if (!perJob.has(jk)) perJob.set(jk, { job: e.job, jobName: '', people: new Map() });
+      if (!perJob.has(jk)) perJob.set(jk, { job: e.job, jobName: '', entries: [] });
       const g = perJob.get(jk);
       if (!g.jobName && e.jobName) g.jobName = e.jobName;
-      g.people.set(e.name, (g.people.get(e.name) || 0) + e.hours);
+      g.entries.push({ date: e.date, dateSort: e.dateSort, name: e.name, hours: fmtHours(e.hours) });
     }
     groups = jobNumbers.map(j => perJob.get(j.toLowerCase())).filter(Boolean).map(g => {
-      const people = [...g.people.entries()].map(([name, hours]) => ({ name, hours: fmtHours(hours) }))
-        .sort((a, b) => b.hours - a.hours || a.name.localeCompare(b.name));
-      return { job: g.job, jobName: g.jobName, people, total: fmtHours(people.reduce((s, p) => s + p.hours, 0)) };
+      const entries = g.entries.slice().sort((a, b) => (a.dateSort - b.dateSort) || a.name.localeCompare(b.name));
+      return { job: g.job, jobName: g.jobName, entries, total: fmtHours(entries.reduce((s, p) => s + p.hours, 0)) };
     });
 
     renderGroups();
@@ -2216,16 +2223,17 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
           if (!empName) empName = 'Unknown';
 
           // Header row: needs a "Job #" column and a "Hours" column
-          let headerRowIdx = -1, colJob = -1, colHours = -1, colJobName = -1;
+          let headerRowIdx = -1, colJob = -1, colHours = -1, colJobName = -1, colDate = -1;
           for (let r = 0; r < Math.min(40, raw.length); r++) {
-            const row = raw[r]; let cj = -1, ch = -1, cn = -1;
+            const row = raw[r]; let cj = -1, ch = -1, cn = -1, cd = -1;
             for (let c = 0; c < row.length; c++) {
               const v = ptoStr(row[c]).toLowerCase().trim();
               if (/job\s*#/.test(v) || v === 'job number' || v === 'job no') cj = c;
               else if (v.includes('job') && (v.includes('name') || v.includes('description'))) cn = c;
+              if (v === 'date') cd = c;
               if (v === 'hours' || (v.includes('hours') && !v.includes('job') && !v.includes('dept'))) ch = c;
             }
-            if (cj !== -1 && ch !== -1) { headerRowIdx = r; colJob = cj; colHours = ch; colJobName = cn; break; }
+            if (cj !== -1 && ch !== -1) { headerRowIdx = r; colJob = cj; colHours = ch; colJobName = cn; colDate = cd; break; }
           }
           if (headerRowIdx === -1) throw new Error('Could not locate a header row with "Job #" and "Hours"');
 
@@ -2238,12 +2246,14 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
             const jobStr = normJob(row[colJob]);
             const hoursStr = ptoStr(row[colHours]).trim();
             const jobName = colJobName >= 0 ? ptoStr(row[colJobName]).trim() : '';
+            const rawDate = colDate >= 0 ? row[colDate] : null;
             if (!jobStr && !hoursStr) { blankStreak++; if (blankStreak >= 3) break; continue; }
             blankStreak = 0;
             if (!jobStr || jobStr.startsWith('=')) continue;
             const hours = parseFloat(hoursStr);
             if (!hoursStr || isNaN(hours) || hours === 0) continue;
-            out.push({ job: jobStr, jobName: (jobName && jobName !== '-') ? jobName : '', name: empName, hours });
+            const dateSort = (typeof rawDate === 'number') ? rawDate : (Date.parse(fmtDate(rawDate)) || 0);
+            out.push({ job: jobStr, jobName: (jobName && jobName !== '-') ? jobName : '', name: empName, hours, date: fmtDate(rawDate), dateSort });
           }
           resolve(out);
         } catch (err) { reject(err); }
@@ -2259,7 +2269,7 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
     if (!groups.length) { empty.style.display = 'block'; return; }
     empty.style.display = 'none';
     for (const g of groups) {
-      const rowsHtml = g.people.map(p => `<tr><td class="name-cell">${esc(p.name)}</td><td class="hours-cell">${p.hours}</td></tr>`).join('');
+      const rowsHtml = g.entries.map(e => `<tr><td>${esc(e.date)}</td><td class="name-cell">${esc(e.name)}</td><td class="hours-cell">${e.hours}</td></tr>`).join('');
       const div = document.createElement('div');
       div.className = 'job-group';
       div.innerHTML = `
@@ -2271,8 +2281,10 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
           <div class="job-group-total">${g.total} hrs total</div>
         </div>
         <div class="table-wrap">
-          <table><thead><tr><th>Employee</th><th style="text-align:right;width:120px">Hours</th></tr></thead>
-            <tbody>${rowsHtml}</tbody></table>
+          <table><thead><tr><th style="width:120px">Date</th><th>Employee</th><th style="text-align:right;width:110px">Hours</th></tr></thead>
+            <tbody>${rowsHtml}
+              <tr class="subtotal-row"><td></td><td>Total</td><td class="hours-cell">${g.total}</td></tr>
+            </tbody></table>
         </div>`;
       container.appendChild(div);
     }
@@ -2281,7 +2293,7 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
   function updateStats() {
     const people = new Set();
     let totalHours = 0;
-    for (const g of groups) { g.people.forEach(p => people.add(p.name)); totalHours += g.total; }
+    for (const g of groups) { g.entries.forEach(e => people.add(e.name)); totalHours += g.total; }
     document.getElementById('jobs-stat-jobs').textContent = groups.length;
     document.getElementById('jobs-stat-people').textContent = people.size;
     document.getElementById('jobs-stat-hours').textContent = fmtHours(totalHours);
@@ -2290,18 +2302,18 @@ function todayStr() { const t = new Date(); return `${t.getFullYear()}-${pad(t.g
 
   window.jobsDownload = function() {
     if (!groups.length) return;
-    const aoa = [['Job #', 'Job Name', 'Employee', 'Hours']];
+    const aoa = [['Job #', 'Job Name', 'Date', 'Employee', 'Hours']];
     for (const g of groups) {
-      g.people.forEach((p, i) => aoa.push([i === 0 ? g.job : '', i === 0 ? g.jobName : '', p.name, p.hours]));
-      aoa.push(['', '', 'Subtotal', g.total]);
+      g.entries.forEach((e, i) => aoa.push([i === 0 ? g.job : '', i === 0 ? g.jobName : '', e.date, e.name, e.hours]));
+      aoa.push(['', '', '', 'Total', g.total]);
       aoa.push([]);
     }
     const ws = XLSX.utils.aoa_to_sheet(aoa);
-    ws['!cols'] = [{ wch: 14 }, { wch: 46 }, { wch: 26 }, { wch: 10 }];
-    // Number-format the Hours column
+    ws['!cols'] = [{ wch: 14 }, { wch: 46 }, { wch: 12 }, { wch: 26 }, { wch: 10 }];
+    // Number-format the Hours column (col E)
     const range = XLSX.utils.decode_range(ws['!ref']);
     for (let r = 1; r <= range.e.r; r++) {
-      const cell = ws[XLSX.utils.encode_cell({ r, c: 3 })];
+      const cell = ws[XLSX.utils.encode_cell({ r, c: 4 })];
       if (cell && typeof cell.v === 'number') { cell.t = 'n'; cell.z = '0.##'; }
     }
     const wb = XLSX.utils.book_new();
